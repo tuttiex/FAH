@@ -2,14 +2,17 @@ export default function Home() {
   return (
     <>
       <header className="flex items-center justify-between px-8 py-7">
-        <a href="#" className="logo flex items-center gap-2.5 text-decoration-none text-ink" aria-label="FAH home">
-          <svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M4 15L15 5L26 15" stroke="#12AD5C" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"/>
-            <path d="M7 12.5V25H23V12.5" stroke="#12AD5C" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"/>
-            <path d="M13 25V18H17V25" stroke="#12AD5C" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
+      <a href="#" className="logo flex items-center gap-2.5 text-decoration-none text-ink" aria-label="FAH home">
+        <svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M4 15L15 5L26 15" stroke="#12AD5C" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"/>
+          <path d="M7 12.5V25H23V12.5" stroke="#12AD5C" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"/>
+          <path d="M13 25V18H17V25" stroke="#12AD5C" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+        <div className="flex flex-col">
           <span className="font-display font-semibold text-[21px] tracking-tight">FAH</span>
-        </a>
+          <span className="text-sm text-ink-soft -mt-1">find a home</span>
+        </div>
+      </a>
 
         <button className="login-btn flex items-center justify-center w-10 h-10 rounded-full border border-solid border-green-tint-strong bg-white cursor-pointer transition-all duration-150 hover:bg-green-tint hover:border-green focus-visible:outline-2 focus-visible:outline-green focus-visible:outline-offset-2" aria-label="Log in">
           <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
