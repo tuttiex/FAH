@@ -20,7 +20,7 @@ export default function Login() {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen px-6">
+      <div className="flex flex-col items-center justify-center flex-1 px-6 py-20">
       <h1 className="text-2xl font-bold mb-6">Log in to FAH</h1>
       <input
         type="email"

@@ -30,7 +30,7 @@ export default function AuthCallback() {
   }, [router])
 
   return (
-    <div className="flex items-center justify-center min-h-screen">
+      <div className="flex items-center justify-center flex-1 px-6 py-20">
       <p className="text-gray-600">{message}</p>
     </div>
   )
