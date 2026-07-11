@@ -11,14 +11,14 @@ export default function AuthCallback() {
   useEffect(() => {
     const { data: listener } = supabase.auth.onAuthStateChange((event) => {
       if (event === 'SIGNED_IN') {
-        router.push('/')
+        router.push('/login')
       }
     })
 
     // Fallback in case the event already fired before this mounted
     supabase.auth.getSession().then(({ data }) => {
       if (data.session) {
-        router.push('/')
+        router.push('/login')
       } else {
         setMessage('Something went wrong confirming your account. Try logging in.')
       }
