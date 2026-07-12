@@ -134,7 +134,7 @@ export default function SignUp() {
             </button>
           )}
           {accountExists && (
-            
+            <a
               href="/login"
               className="mt-2 inline-block text-sm text-[#12AD5C] hover:underline"
             >
