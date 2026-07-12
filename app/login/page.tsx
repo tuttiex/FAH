@@ -71,7 +71,7 @@ export default function Login() {
         <div className="mt-4 text-center">
           <p className="text-sm text-gray-600">{message}</p>
           {noAccountFound && (
-            
+            <a
               href="/signup"
               className="mt-2 inline-block text-sm text-[#12AD5C] hover:underline"
             >
