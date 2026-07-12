@@ -12,7 +12,7 @@ export default function SignUp() {
 
   useEffect(() => {
     if (countdown > 0) {
-      const timer = setTimeout(() => setCountdown(countdown - 1), 1000)
+      const timer = setTimeout(() => setCountdown(c => c - 1), 1000)
       return () => clearTimeout(timer)
     } else if (countdown === 0 && !canResend) {
       setCanResend(true)
