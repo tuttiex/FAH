@@ -8,6 +8,7 @@ export default function SignUp() {
   const [password, setPassword] = useState('')
   const [message, setMessage] = useState('')
   const [signupSuccess, setSignupSuccess] = useState(false)
+  const [accountExists, setAccountExists] = useState(false)
   const [loading, setLoading] = useState(false)
   const [countdown, setCountdown] = useState(0)
   const [canResend, setCanResend] = useState(true)
@@ -44,7 +45,7 @@ export default function SignUp() {
     }
 
     setLoading(true)
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -56,12 +57,24 @@ export default function SignUp() {
     if (error) {
       setMessage(error.message)
       setSignupSuccess(false)
-    } else {
-      setMessage('Check your email to confirm your account.')
-      setSignupSuccess(true)
-      setCanResend(false)
-      setCountdown(60)
+      setAccountExists(false)
+      return
     }
+
+    // Supabase returns no error for an already-registered, confirmed email —
+    // an empty identities array is how we detect it
+    if (data?.user?.identities && data.user.identities.length === 0) {
+      setMessage('An account with this email already exists.')
+      setSignupSuccess(false)
+      setAccountExists(true)
+      return
+    }
+
+    setMessage('Check your email to confirm your account.')
+    setSignupSuccess(true)
+    setAccountExists(false)
+    setCanResend(false)
+    setCountdown(60)
   }
 
   const handleResend = async () => {
@@ -119,6 +132,14 @@ export default function SignUp() {
             >
               {canResend ? 'Resend confirmation email' : `Resend in ${countdown}s`}
             </button>
+          )}
+          {accountExists && (
+            
+              href="/login"
+              className="mt-2 inline-block text-sm text-[#12AD5C] hover:underline"
+            >
+              Log in instead
+            </a>
           )}
         </div>
       )}

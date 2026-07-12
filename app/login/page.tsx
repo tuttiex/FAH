@@ -8,6 +8,7 @@ export default function Login() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [message, setMessage] = useState('')
+  const [noAccountFound, setNoAccountFound] = useState(false)
   const [loading, setLoading] = useState(false)
   const router = useRouter()
 
@@ -22,10 +23,16 @@ export default function Login() {
     setLoading(false)
 
     if (error) {
-      if (error.message.toLowerCase().includes('email not confirmed')) {
+      const errText = error.message.toLowerCase()
+      if (errText.includes('email not confirmed')) {
         setMessage('Please confirm your email before logging in. Check your inbox.')
+        setNoAccountFound(false)
+      } else if (errText.includes('invalid login credentials')) {
+        setMessage('No account found with that email and password, or your details are incorrect.')
+        setNoAccountFound(true)
       } else {
         setMessage(error.message)
+        setNoAccountFound(false)
       }
     } else {
       router.push('/')
@@ -60,7 +67,19 @@ export default function Login() {
       >
         {loading ? 'Logging in…' : 'Log In'}
       </button>
-      {message && <p className="mt-4 text-sm text-gray-600">{message}</p>}
+      {message && (
+        <div className="mt-4 text-center">
+          <p className="text-sm text-gray-600">{message}</p>
+          {noAccountFound && (
+            
+              href="/signup"
+              className="mt-2 inline-block text-sm text-[#12AD5C] hover:underline"
+            >
+              Create an account instead
+            </a>
+          )}
+        </div>
+      )}
     </div>
   )
 }
