@@ -32,7 +32,7 @@ export default function SignUp() {
     } else {
       setMessage('Check your email to confirm your account.')
       setCanResend(false)
-      setCountdown(90)
+      setCountdown(60)
     }
   }
 
@@ -45,7 +45,7 @@ export default function SignUp() {
     } else {
       setMessage('Confirmation email sent! Check your inbox.')
       setCanResend(false)
-      setCountdown(90)
+      setCountdown(60)
     }
   }
 
