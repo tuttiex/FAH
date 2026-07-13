@@ -196,19 +196,19 @@ export default function ListPage() {
                   />
                   
                   <button
+                    type="button"
+                    className="px-3 py-2 rounded-full text-white mt-2"
+                    style={{ backgroundColor: '#12AD5C' }}
+                  >
+                    Upload Images
+                  </button>
+                  
+                  <button
                     type="submit"
                     className="px-6 py-2 rounded-full text-white mt-2"
                     style={{ backgroundColor: '#12AD5C' }}
                   >
                     List Property
-                  </button>
-                  
-                  <button
-                    type="button"
-                    className="px-6 py-2 rounded-full text-white mt-2"
-                    style={{ backgroundColor: '#12AD5C' }}
-                  >
-                    Upload Images
                   </button>
                 </div>
                 
