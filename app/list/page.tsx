@@ -197,7 +197,7 @@ export default function ListPage() {
                   
                   <button
                     type="button"
-                    className="px-3 py-2 rounded-full text-white mt-2"
+                    className="px-6 py-2 rounded-full text-white mt-2 w-1/2"
                     style={{ backgroundColor: '#12AD5C' }}
                   >
                     Upload Images
