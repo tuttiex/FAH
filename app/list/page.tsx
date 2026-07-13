@@ -91,8 +91,6 @@ export default function ListPage() {
 
             {showForm && (
               <form onSubmit={handleSubmit} className="mb-8 p-6 border border-green-tint-strong rounded-lg">
-                <h2 className="text-xl font-semibold mb-4">Property Details</h2>
-                
                 <div className="grid gap-4">
                   <select
                     name="property_type"
