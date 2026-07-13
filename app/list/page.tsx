@@ -18,6 +18,7 @@ interface Property {
 
 export default function ListPage() {
   const [user, setUser] = useState<User | null>(null)
+  const [profileComplete, setProfileComplete] = useState(false)
   const [properties, setProperties] = useState<Property[]>([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
@@ -33,12 +34,21 @@ export default function ListPage() {
   const [submitMessage, setSubmitMessage] = useState('')
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
+    const checkUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
       setUser(user)
-    })
-
-    // Fetch existing properties
-    fetchProperties()
+      
+      if (user) {
+        // Check if profile exists
+        const { data: profile } = await supabase.from('profiles').select('id').eq('user_id', user.id).single()
+        setProfileComplete(!!profile)
+      }
+      
+      // Fetch existing properties
+      fetchProperties()
+    }
+    
+    checkUser()
   }, [])
 
   const fetchProperties = async () => {
@@ -96,15 +106,26 @@ export default function ListPage() {
         
         {user ? (
           <>
+            {!profileComplete && (
+              <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <p className="text-ink">
+                  Please <a href="/profile" className="text-green font-medium underline">complete your profile</a> before listing a property.
+                </p>
+              </div>
+            )}
+            
             <button
               onClick={() => setShowForm(!showForm)}
-              className="mb-6 px-6 py-2 rounded-full text-white"
+              disabled={!profileComplete}
+              className={`mb-6 px-6 py-2 rounded-full text-white transition-opacity ${
+                !profileComplete ? 'opacity-60 cursor-not-allowed' : ''
+              }`}
               style={{ backgroundColor: '#12AD5C' }}
             >
               {showForm ? 'Cancel' : 'Add New Property'}
             </button>
 
-            {showForm && (
+            {showForm && profileComplete && (
               <form onSubmit={handleSubmit} className="mb-8 p-6 border border-green-tint-strong rounded-lg">
                 <div className="grid gap-4">
                   <p className="font-medium">Select Property Type</p>

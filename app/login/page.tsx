@@ -19,7 +19,7 @@ export default function Login() {
     }
 
     setLoading(true)
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password })
     setLoading(false)
 
     if (error) {
@@ -35,7 +35,16 @@ export default function Login() {
         setNoAccountFound(false)
       }
     } else {
-      router.push('/')
+      // Check if profile exists
+      const user = data.user
+      if (user) {
+        const { data: profile } = await supabase.from('profiles').select('id').eq('user_id', user.id).single()
+        if (!profile) {
+          router.push('/profile')
+        } else {
+          router.push('/')
+        }
+      }
       router.refresh()
     }
   }

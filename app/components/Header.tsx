@@ -7,14 +7,31 @@ import type { User } from '@supabase/supabase-js'
 export default function Header() {
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const [user, setUser] = useState<User | null>(null)
+  const [profileComplete, setProfileComplete] = useState(false)
   
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
+    const checkUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
       setUser(user)
-    })
+      
+      if (user) {
+        // Check if profile exists
+        const { data: profile } = await supabase.from('profiles').select('id').eq('user_id', user.id).single()
+        setProfileComplete(!!profile)
+      }
+    }
+    
+    checkUser()
     
     const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
       setUser(session?.user || null)
+      if (session?.user) {
+        supabase.from('profiles').select('id').eq('user_id', session.user.id).single().then(({ data }) => {
+          setProfileComplete(!!data)
+        })
+      } else {
+        setProfileComplete(false)
+      }
     })
     
     return () => {
@@ -25,6 +42,7 @@ export default function Header() {
   const handleLogout = async () => {
     await supabase.auth.signOut()
     setUser(null)
+    setProfileComplete(false)
     setDropdownOpen(false)
   }
   
@@ -34,7 +52,7 @@ export default function Header() {
         <svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M4 15L15 5L26 15" stroke="#12AD5C" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"/>
           <path d="M7 12.5V25H23V12.5" stroke="#12AD5C" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"/>
-          <path d="M13 25V18H17V25" stroke="#12AD5C" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"/>
+          <path d="M13 25V18H17V25" stroke="#12AD5C" strokeWidth="2.4" strokeLinecap="round"/>
         </svg>
         <div className="flex flex-col">
           <span className="font-display font-semibold text-[21px] tracking-tight">FAH</span>
@@ -55,12 +73,15 @@ export default function Header() {
         </button>
         <div className={`${dropdownOpen ? '' : 'hidden'} absolute right-0 mt-2 w-48 bg-white border border-green-tint-strong rounded-lg shadow-lg z-10`}>
           {user ? (
-            <button 
-              onClick={handleLogout}
-              className="block w-full px-4 py-2 text-left text-ink hover:bg-green-tint"
-            >
-              Log out
-            </button>
+            <>
+              <a href="/profile" className="block px-4 py-2 text-ink hover:bg-green-tint">Profile</a>
+              <button 
+                onClick={handleLogout}
+                className="block w-full px-4 py-2 text-left text-ink hover:bg-green-tint"
+              >
+                Log out
+              </button>
+            </>
           ) : (
             <>
               <a href="/login" className="block px-4 py-2 text-ink hover:bg-green-tint">Log In</a>
