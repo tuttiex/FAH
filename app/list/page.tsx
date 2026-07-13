@@ -13,6 +13,7 @@ interface Property {
   location: string
   bedrooms: number
   bathrooms: number
+  units_available: number
   created_at: string
 }
 
@@ -29,6 +30,7 @@ export default function ListPage() {
     location: '',
     bedrooms: '',
     bathrooms: '',
+    units_available: '',
   })
   const [submitMessage, setSubmitMessage] = useState('')
 
@@ -76,6 +78,7 @@ export default function ListPage() {
       price: parseInt(formData.price),
       bedrooms: parseInt(formData.bedrooms),
       bathrooms: parseInt(formData.bathrooms),
+      units_available: parseInt(formData.units_available),
       user_id: user.id,
     })
 
@@ -83,7 +86,7 @@ export default function ListPage() {
       setSubmitMessage('Error listing property. Please try again.')
     } else {
       setSubmitMessage('Property listed successfully!')
-      setFormData({ property_type: '', property_details: '', description: '', price: '', location: '', bedrooms: '', bathrooms: '' })
+      setFormData({ property_type: '', property_details: '', description: '', price: '', location: '', bedrooms: '', bathrooms: '', units_available: '' })
       setShowForm(false)
       fetchProperties()
     }
@@ -107,6 +110,7 @@ export default function ListPage() {
             {showForm && (
               <form onSubmit={handleSubmit} className="mb-8 p-6 border border-green-tint-strong rounded-lg">
                 <div className="grid gap-4">
+                  <p className="font-medium">Select Property Type</p>
                   <select
                     name="property_type"
                     value={formData.property_type}
@@ -121,22 +125,26 @@ export default function ListPage() {
                   </select>
                   
                   {formData.property_type && (
-                    <select
-                      name="property_details"
-                      value={formData.property_details}
-                      onChange={handleInputChange}
-                      required
-                      className="border rounded px-4 py-2 w-full"
-                    >
-                      <option value="" disabled>Select Property Details</option>
-                      {getPropertyDetailsOptions().map((option) => (
-                        <option key={option} value={option}>
-                          {option}
-                        </option>
-                      ))}
-                    </select>
+                    <>
+                      <p className="font-medium">Select Property Details</p>
+                      <select
+                        name="property_details"
+                        value={formData.property_details}
+                        onChange={handleInputChange}
+                        required
+                        className="border rounded px-4 py-2 w-full"
+                      >
+                        <option value="" disabled>Select Property Details</option>
+                        {getPropertyDetailsOptions().map((option) => (
+                          <option key={option} value={option}>
+                            {option}
+                          </option>
+                        ))}
+                      </select>
+                    </>
                   )}
                   
+                  <p className="font-medium">Further description of property details</p>
                   <textarea
                     name="description"
                     placeholder="Description"
@@ -144,6 +152,17 @@ export default function ListPage() {
                     onChange={handleInputChange}
                     required
                     className="border rounded px-4 py-2 w-full h-24"
+                  />
+                  
+                  <p className="font-medium">Number/Units available</p>
+                  <input
+                    type="number"
+                    name="units_available"
+                    placeholder="Number of units available"
+                    value={formData.units_available}
+                    onChange={handleInputChange}
+                    required
+                    className="border rounded px-4 py-2 w-full"
                   />
                   <input
                     type="number"
