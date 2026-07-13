@@ -6,7 +6,7 @@ import type { User } from '@supabase/supabase-js'
 
 interface Property {
   id: string
-  title: string
+  property_type: string
   description: string
   price: number
   location: string
@@ -21,7 +21,7 @@ export default function ListPage() {
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [formData, setFormData] = useState({
-    title: '',
+    property_type: '',
     description: '',
     price: '',
     location: '',
@@ -48,7 +48,7 @@ export default function ListPage() {
     setLoading(false)
   }
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
   }
 
@@ -68,7 +68,7 @@ export default function ListPage() {
       setSubmitMessage('Error listing property. Please try again.')
     } else {
       setSubmitMessage('Property listed successfully!')
-      setFormData({ title: '', description: '', price: '', location: '', bedrooms: '', bathrooms: '' })
+      setFormData({ property_type: '', description: '', price: '', location: '', bedrooms: '', bathrooms: '' })
       setShowForm(false)
       fetchProperties()
     }
@@ -94,15 +94,18 @@ export default function ListPage() {
                 <h2 className="text-xl font-semibold mb-4">Property Details</h2>
                 
                 <div className="grid gap-4">
-                  <input
-                    type="text"
-                    name="title"
-                    placeholder="Property Title"
-                    value={formData.title}
+                  <select
+                    name="property_type"
+                    value={formData.property_type}
                     onChange={handleInputChange}
                     required
                     className="border rounded px-4 py-2 w-full"
-                  />
+                  >
+                    <option value="" disabled>Select Property Type</option>
+                    <option value="House">House</option>
+                    <option value="Shop">Shop</option>
+                    <option value="Land">Land</option>
+                  </select>
                   <textarea
                     name="description"
                     placeholder="Description"
@@ -172,7 +175,7 @@ export default function ListPage() {
               <div className="grid gap-4">
                 {properties.map((prop) => (
                   <div key={prop.id} className="p-4 border border-green-tint-strong rounded-lg">
-                    <h3 className="font-semibold text-lg">{prop.title}</h3>
+                    <h3 className="font-semibold text-lg">{prop.property_type}</h3>
                     <p className="text-ink-soft text-sm">{prop.location}</p>
                     <p className="font-bold text-green mt-1">${prop.price.toLocaleString()}</p>
                     <p className="text-sm mt-2">{prop.bedrooms} bd • {prop.bathrooms} ba</p>
