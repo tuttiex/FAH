@@ -13,13 +13,13 @@ export default function Home() {
         </h1>
 
         <div className="actions flex gap-4 flex-wrap justify-center">
-          <a href="#list" className="btn btn-primary flex items-center gap-2.25 px-7.5 py-3.5 rounded-xl font-semibold text-base no-underline cursor-pointer border border-solid border-transparent transition-all duration-150 active:scale-95 bg-green text-white hover:bg-[#0f9a51] focus-visible:outline-2 focus-visible:outline-green focus-visible:outline-offset-3">
+          <a href="/list" className="btn btn-primary flex items-center gap-2.25 px-7.5 py-3.5 rounded-xl font-semibold text-base no-underline cursor-pointer border border-solid border-transparent transition-all duration-150 active:scale-95 bg-green text-white hover:bg-[#0f9a51] focus-visible:outline-2 focus-visible:outline-green focus-visible:outline-offset-3">
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M9 3V15M3 9H15" stroke="#FFFFFF" strokeWidth="2" strokeLinecap="round"/>
             </svg>
             List
           </a>
-          <a href="#rent" className="btn btn-secondary flex items-center gap-2.25 px-7.5 py-3.5 rounded-xl font-semibold text-base no-underline cursor-pointer border border-solid border-green transition-all duration-150 active:scale-95 bg-white text-green hover:bg-green-tint focus-visible:outline-2 focus-visible:outline-green focus-visible:outline-offset-3">
+          <a href="/rent" className="btn btn-secondary flex items-center gap-2.25 px-7.5 py-3.5 rounded-xl font-semibold text-base no-underline cursor-pointer border border-solid border-green transition-all duration-150 active:scale-95 bg-white text-green hover:bg-green-tint focus-visible:outline-2 focus-visible:outline-green focus-visible:outline-offset-3">
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
               <circle cx="6.5" cy="6.5" r="3.2" stroke="#12AD5C" strokeWidth="1.6"/>
               <path d="M8.8 8.8L15 15M15 15V11M15 15H11" stroke="#12AD5C" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
