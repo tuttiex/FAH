@@ -7,6 +7,7 @@ import type { User } from '@supabase/supabase-js'
 interface Property {
   id: string
   property_type: string
+  property_details: string
   description: string
   price: number
   location: string
@@ -22,6 +23,7 @@ export default function ListPage() {
   const [showForm, setShowForm] = useState(false)
   const [formData, setFormData] = useState({
     property_type: '',
+    property_details: '',
     description: '',
     price: '',
     location: '',
@@ -52,6 +54,19 @@ export default function ListPage() {
     setFormData({ ...formData, [e.target.name]: e.target.value })
   }
 
+  const getPropertyDetailsOptions = () => {
+    switch (formData.property_type) {
+      case 'House':
+        return ['1 room self contain', 'room and palour self contain', '2 bedroom flat', '3 bedroom flat', 'duplex', 'other']
+      case 'Shop':
+        return ['single shop', 'other']
+      case 'Land':
+        return ['bare land', 'other']
+      default:
+        return []
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!user) return
@@ -68,7 +83,7 @@ export default function ListPage() {
       setSubmitMessage('Error listing property. Please try again.')
     } else {
       setSubmitMessage('Property listed successfully!')
-      setFormData({ property_type: '', description: '', price: '', location: '', bedrooms: '', bathrooms: '' })
+      setFormData({ property_type: '', property_details: '', description: '', price: '', location: '', bedrooms: '', bathrooms: '' })
       setShowForm(false)
       fetchProperties()
     }
@@ -104,6 +119,24 @@ export default function ListPage() {
                     <option value="Shop">Shop</option>
                     <option value="Land">Land</option>
                   </select>
+                  
+                  {formData.property_type && (
+                    <select
+                      name="property_details"
+                      value={formData.property_details}
+                      onChange={handleInputChange}
+                      required
+                      className="border rounded px-4 py-2 w-full"
+                    >
+                      <option value="" disabled>Select Property Details</option>
+                      {getPropertyDetailsOptions().map((option) => (
+                        <option key={option} value={option}>
+                          {option}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                  
                   <textarea
                     name="description"
                     placeholder="Description"
