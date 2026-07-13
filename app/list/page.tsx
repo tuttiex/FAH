@@ -10,9 +10,8 @@ interface Property {
   property_details: string
   description: string
   price: number
-  location: string
-  bedrooms: number
-  bathrooms: number
+  address: string
+  toilets: number
   units_available: number
   created_at: string
 }
@@ -27,9 +26,8 @@ export default function ListPage() {
     property_details: '',
     description: '',
     price: '',
-    location: '',
-    bedrooms: '',
-    bathrooms: '',
+    address: '',
+    toilets: '',
     units_available: '',
   })
   const [submitMessage, setSubmitMessage] = useState('')
@@ -76,8 +74,7 @@ export default function ListPage() {
     const { error } = await supabase.from('properties').insert({
       ...formData,
       price: parseInt(formData.price),
-      bedrooms: parseInt(formData.bedrooms),
-      bathrooms: parseInt(formData.bathrooms),
+      toilets: parseInt(formData.toilets),
       units_available: parseInt(formData.units_available),
       user_id: user.id,
     })
@@ -86,7 +83,7 @@ export default function ListPage() {
       setSubmitMessage('Error listing property. Please try again.')
     } else {
       setSubmitMessage('Property listed successfully!')
-      setFormData({ property_type: '', property_details: '', description: '', price: '', location: '', bedrooms: '', bathrooms: '', units_available: '' })
+      setFormData({ property_type: '', property_details: '', description: '', price: '', address: '', toilets: '', units_available: '' })
       setShowForm(false)
       fetchProperties()
     }
@@ -154,6 +151,39 @@ export default function ListPage() {
                     className="border rounded px-4 py-2 w-full h-24"
                   />
                   
+                  <p className="font-medium">Number of toilet facility</p>
+                  <input
+                    type="number"
+                    name="toilets"
+                    placeholder="Number of toilets"
+                    value={formData.toilets}
+                    onChange={handleInputChange}
+                    required
+                    className="border rounded px-4 py-2 w-full"
+                  />
+                  
+                  <p className="font-medium">Price</p>
+                  <input
+                    type="number"
+                    name="price"
+                    placeholder="Price (Naira)"
+                    value={formData.price}
+                    onChange={handleInputChange}
+                    required
+                    className="border rounded px-4 py-2 w-full"
+                  />
+                  
+                  <p className="font-medium">Address</p>
+                  <input
+                    type="text"
+                    name="address"
+                    placeholder="Address"
+                    value={formData.address}
+                    onChange={handleInputChange}
+                    required
+                    className="border rounded px-4 py-2 w-full"
+                  />
+                  
                   <p className="font-medium">Number/Units available</p>
                   <input
                     type="number"
@@ -164,44 +194,6 @@ export default function ListPage() {
                     required
                     className="border rounded px-4 py-2 w-full"
                   />
-                  <input
-                    type="number"
-                    name="price"
-                    placeholder="Price (USD)"
-                    value={formData.price}
-                    onChange={handleInputChange}
-                    required
-                    className="border rounded px-4 py-2 w-full"
-                  />
-                  <input
-                    type="text"
-                    name="location"
-                    placeholder="Location"
-                    value={formData.location}
-                    onChange={handleInputChange}
-                    required
-                    className="border rounded px-4 py-2 w-full"
-                  />
-                  <div className="grid grid-cols-2 gap-4">
-                    <input
-                      type="number"
-                      name="bedrooms"
-                      placeholder="Bedrooms"
-                      value={formData.bedrooms}
-                      onChange={handleInputChange}
-                      required
-                      className="border rounded px-4 py-2"
-                    />
-                    <input
-                      type="number"
-                      name="bathrooms"
-                      placeholder="Bathrooms"
-                      value={formData.bathrooms}
-                      onChange={handleInputChange}
-                      required
-                      className="border rounded px-4 py-2"
-                    />
-                  </div>
                   
                   <button
                     type="submit"
@@ -209,6 +201,14 @@ export default function ListPage() {
                     style={{ backgroundColor: '#12AD5C' }}
                   >
                     List Property
+                  </button>
+                  
+                  <button
+                    type="button"
+                    className="px-6 py-2 rounded-full text-white mt-2"
+                    style={{ backgroundColor: '#12AD5C' }}
+                  >
+                    Upload Images
                   </button>
                 </div>
                 
@@ -226,9 +226,8 @@ export default function ListPage() {
                 {properties.map((prop) => (
                   <div key={prop.id} className="p-4 border border-green-tint-strong rounded-lg">
                     <h3 className="font-semibold text-lg">{prop.property_type}</h3>
-                    <p className="text-ink-soft text-sm">{prop.location}</p>
-                    <p className="font-bold text-green mt-1">${prop.price.toLocaleString()}</p>
-                    <p className="text-sm mt-2">{prop.bedrooms} bd • {prop.bathrooms} ba</p>
+                    <p className="text-ink-soft text-sm">{prop.address}</p>
+                    <p className="font-bold text-green mt-1">₦{prop.price.toLocaleString()}</p>
                   </div>
                 ))}
               </div>
