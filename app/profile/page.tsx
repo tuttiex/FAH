@@ -23,6 +23,7 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState('')
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [formData, setFormData] = useState({
     first_name: '',
     surname: '',
@@ -69,9 +70,28 @@ export default function ProfilePage() {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
-      // For now, store the file name - in production you'd upload to storage
-      setFormData({ ...formData, proof_of_identity: file.name })
+      setSelectedFile(file)
     }
+  }
+
+  const uploadProofOfIdentity = async (): Promise<string> => {
+    if (!selectedFile || !user) return ''
+    
+    const fileName = `proof-of-identity-${user.id}-${Date.now()}-${selectedFile.name}`
+    const { data, error } = await supabase.storage
+      .from('proof-of-identity')
+      .upload(fileName, selectedFile)
+    
+    if (error) {
+      console.error('Upload error:', error)
+      return ''
+    }
+    
+    const { data: publicUrl } = supabase.storage
+      .from('proof-of-identity')
+      .getPublicUrl(data.path)
+    
+    return publicUrl?.publicUrl || ''
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -79,13 +99,20 @@ export default function ProfilePage() {
     if (!user) return
 
     setSaving(true)
+    
+    // Upload proof of identity image if selected
+    let proofOfIdentityUrl = formData.proof_of_identity
+    if (selectedFile) {
+      proofOfIdentityUrl = await uploadProofOfIdentity()
+    }
+
     const { error } = await supabase.from('profiles').upsert({
       user_id: user.id,
       first_name: formData.first_name,
       surname: formData.surname,
       email: formData.email,
       phone: formData.phone,
-      proof_of_identity: formData.proof_of_identity,
+      proof_of_identity: proofOfIdentityUrl,
     })
 
     setSaving(false)
@@ -93,7 +120,7 @@ export default function ProfilePage() {
       setMessage('Error saving profile. Please try again.')
     } else {
       setMessage('Profile saved successfully!')
-      setProfile({ ...profile, user_id: user.id, ...formData } as Profile)
+      setProfile({ ...profile, user_id: user.id, ...formData, proof_of_identity: proofOfIdentityUrl } as Profile)
       setTimeout(() => {
         router.push('/')
       }, 1500)
@@ -161,17 +188,20 @@ export default function ProfilePage() {
           />
         </div>
         <div className="mb-4">
-          <label className="block text-sm font-medium mb-2">Proof of Identity</label>
+          <label className="block text-sm font-medium mb-2">Proof of Identity (Image)</label>
           <input
             type="file"
             name="proof_of_identity"
-            accept="image/*,.pdf"
+            accept="image/*"
             onChange={handleFileChange}
             required
             className="border rounded px-4 py-2 w-full"
           />
-          {formData.proof_of_identity && (
-            <p className="mt-1 text-xs text-gray-500">Selected: {formData.proof_of_identity}</p>
+          {selectedFile && (
+            <p className="mt-1 text-xs text-gray-500">Selected: {selectedFile.name}</p>
+          )}
+          {!selectedFile && formData.proof_of_identity && (
+            <p className="mt-1 text-xs text-gray-500">Current file uploaded</p>
           )}
         </div>
         <button
