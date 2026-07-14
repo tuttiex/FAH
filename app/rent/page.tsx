@@ -5,12 +5,14 @@ import { supabase } from '../../lib/supabase'
 
 interface Property {
   id: string
-  title: string
+  property_type: string
+  property_details: string
   description: string
   price: number
-  location: string
-  bedrooms: number
-  bathrooms: number
+  address: string
+  toilets: number
+  units_available: number
+  image_urls?: string[]
   created_at: string
 }
 
@@ -33,9 +35,10 @@ export default function RentPage() {
   }
 
   const filteredProperties = properties.filter((prop) =>
-    prop.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    prop.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    prop.description.toLowerCase().includes(searchTerm.toLowerCase())
+    prop.property_type.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    prop.address.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    prop.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    prop.property_details.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
   return (
@@ -46,7 +49,7 @@ export default function RentPage() {
         <div className="mb-6">
           <input
             type="text"
-            placeholder="Search by location, title, or description..."
+            placeholder="Search by location, type, or description..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="border rounded px-4 py-2 w-full max-w-md"
@@ -61,13 +64,20 @@ export default function RentPage() {
           <div className="grid gap-6">
             {filteredProperties.map((prop) => (
               <div key={prop.id} className="p-6 border border-green-tint-strong rounded-lg hover:shadow-md transition-shadow">
-                <h2 className="font-semibold text-xl mb-2">{prop.title}</h2>
-                <p className="text-ink-soft text-sm mb-3">{prop.location}</p>
+                <h2 className="font-semibold text-xl mb-2">{prop.property_type} - {prop.property_details}</h2>
+                <p className="text-ink-soft text-sm mb-3">{prop.address}</p>
                 <p className="text-gray-700 mb-4">{prop.description}</p>
                 <div className="flex justify-between items-center">
-                  <span className="font-bold text-green text-lg">${prop.price.toLocaleString()}</span>
-                  <span className="text-sm text-ink-soft">{prop.bedrooms} bd • {prop.bathrooms} ba</span>
+                  <span className="font-bold text-green text-lg">₦{prop.price.toLocaleString()}</span>
+                  <span className="text-sm text-ink-soft">{prop.toilets} toilet • {prop.units_available} unit(s) available</span>
                 </div>
+                {prop.image_urls && prop.image_urls.length > 0 && (
+                  <div className="mt-3 flex gap-2 overflow-x-auto">
+                    {prop.image_urls.map((url, index) => (
+                      <img key={index} src={url} alt={`Property ${index + 1}`} className="w-20 h-20 object-cover rounded" />
+                    ))}
+                  </div>
+                )}
               </div>
             ))}
           </div>

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { supabase } from '../../lib/supabase'
 import type { User } from '@supabase/supabase-js'
 
@@ -34,24 +35,45 @@ export default function ListPage() {
   const [selectedImages, setSelectedImages] = useState<File[]>([])
   const [uploading, setUploading] = useState(false)
   const [submitMessage, setSubmitMessage] = useState('')
+  const router = useRouter()
 
   useEffect(() => {
-    const checkUser = async () => {
+    const checkUserAndProfile = async () => {
       const { data: { user } } = await supabase.auth.getUser()
       setUser(user)
+      
+      if (user) {
+        // Check if profile is complete
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('first_name, surname, email, proof_of_identity')
+          .eq('user_id', user.id)
+          .single()
+        
+        const isProfileComplete = profile && 
+          profile.first_name && 
+          profile.surname && 
+          profile.email && 
+          profile.proof_of_identity
+        
+        if (!isProfileComplete) {
+          router.push('/profile')
+          return
+        }
+      }
+      
       fetchProperties()
+      setLoading(false)
     }
     
-    checkUser()
-  }, [])
+    checkUserAndProfile()
+  }, [router])
 
   const fetchProperties = async () => {
-    setLoading(true)
     const { data, error } = await supabase.from('properties').select('*').order('created_at', { ascending: false })
     if (data) {
       setProperties(data)
     }
-    setLoading(false)
   }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -126,6 +148,14 @@ export default function ListPage() {
       setShowForm(false)
       fetchProperties()
     }
+  }
+
+  if (loading) {
+    return (
+      <main className="flex-1 flex items-center justify-center">
+        <p className="text-gray-600">Loading...</p>
+      </main>
+    )
   }
 
   return (
@@ -263,9 +293,7 @@ export default function ListPage() {
             )}
 
             <h2 className="text-2xl font-semibold mb-4">Your Properties</h2>
-            {loading ? (
-              <p>Loading properties...</p>
-            ) : properties.length === 0 ? (
+            {properties.length === 0 ? (
               <p className="text-ink-soft">No properties listed yet. Add your first property above!</p>
             ) : (
               <div className="grid gap-4">

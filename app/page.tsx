@@ -1,18 +1,43 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { supabase } from '../lib/supabase'
 
 export default function Home() {
   const [user, setUser] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+  const router = useRouter()
 
   useEffect(() => {
-    const checkUser = async () => {
+    const checkUserAndProfile = async () => {
       const { data: { user } } = await supabase.auth.getUser()
       setUser(user)
+      
+      if (user) {
+        // Check if profile is complete
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('first_name, surname, email, proof_of_identity')
+          .eq('user_id', user.id)
+          .single()
+        
+        const isProfileComplete = profile && 
+          profile.first_name && 
+          profile.surname && 
+          profile.email && 
+          profile.proof_of_identity
+        
+        if (!isProfileComplete) {
+          router.push('/profile')
+          return
+        }
+      }
+      
+      setLoading(false)
     }
     
-    checkUser()
+    checkUserAndProfile()
     
     const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
       setUser(session?.user || null)
@@ -21,7 +46,15 @@ export default function Home() {
     return () => {
       listener?.subscription.unsubscribe()
     }
-  }, [])
+  }, [router])
+
+  if (loading) {
+    return (
+      <main className="flex-1 flex items-center justify-center">
+        <p className="text-gray-600">Loading...</p>
+      </main>
+    )
+  }
 
   return (
     <main className="relative flex-1 flex items-center justify-center px-6 py-10 overflow-hidden">
@@ -56,5 +89,5 @@ export default function Home() {
         </div>
       </div>
     </main>
-  );
+  )
 }
