@@ -7,31 +7,17 @@ import type { User } from '@supabase/supabase-js'
 export default function Header() {
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const [user, setUser] = useState<User | null>(null)
-  const [profileComplete, setProfileComplete] = useState(false)
   
   useEffect(() => {
     const checkUser = async () => {
       const { data: { user } } = await supabase.auth.getUser()
       setUser(user)
-      
-      if (user) {
-        // Check if profile exists
-        const { data: profile } = await supabase.from('profiles').select('id').eq('user_id', user.id).single()
-        setProfileComplete(!!profile)
-      }
     }
     
     checkUser()
     
     const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
       setUser(session?.user || null)
-      if (session?.user) {
-        supabase.from('profiles').select('id').eq('user_id', session.user.id).single().then(({ data }) => {
-          setProfileComplete(!!data)
-        })
-      } else {
-        setProfileComplete(false)
-      }
     })
     
     return () => {
@@ -42,7 +28,6 @@ export default function Header() {
   const handleLogout = async () => {
     await supabase.auth.signOut()
     setUser(null)
-    setProfileComplete(false)
     setDropdownOpen(false)
   }
   

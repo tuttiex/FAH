@@ -2,34 +2,20 @@
 
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
-import type { Session } from '@supabase/supabase-js'
 
 export default function Home() {
   const [user, setUser] = useState<any>(null)
-  const [profileComplete, setProfileComplete] = useState(false)
 
   useEffect(() => {
     const checkUser = async () => {
       const { data: { user } } = await supabase.auth.getUser()
       setUser(user)
-      
-      if (user) {
-        const { data: profile } = await supabase.from('profiles').select('id').eq('user_id', user.id).single()
-        setProfileComplete(!!profile)
-      }
     }
     
     checkUser()
     
     const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
       setUser(session?.user || null)
-      if (session?.user) {
-        supabase.from('profiles').select('id').eq('user_id', session.user.id).single().then(({ data }) => {
-          setProfileComplete(!!data)
-        })
-      } else {
-        setProfileComplete(false)
-      }
     })
     
     return () => {
@@ -52,13 +38,13 @@ export default function Home() {
 
         <div className="actions flex gap-4 flex-wrap justify-center">
           <a 
-            href={user && !profileComplete ? '/profile' : '/list'} 
+            href="/list" 
             className="btn btn-primary flex items-center gap-2.25 px-7.5 py-3.5 rounded-xl font-semibold text-base no-underline cursor-pointer border border-solid border-transparent transition-all duration-150 active:scale-95 bg-green text-white hover:bg-[#0f9a51] focus-visible:outline-2 focus-visible:outline-green focus-visible:outline-offset-3"
           >
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M9 3V15M3 9H15" stroke="#FFFFFF" strokeWidth="2" strokeLinecap="round"/>
             </svg>
-            {user && !profileComplete ? 'Complete Profile' : 'List'}
+            List
           </a>
           <a href="/rent" className="btn btn-secondary flex items-center gap-2.25 px-7.5 py-3.5 rounded-xl font-semibold text-base no-underline cursor-pointer border border-solid border-green transition-all duration-150 active:scale-95 bg-white text-green hover:bg-green-tint focus-visible:outline-2 focus-visible:outline-green focus-visible:outline-offset-3">
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">

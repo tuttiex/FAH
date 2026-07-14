@@ -35,16 +35,7 @@ export default function Login() {
         setNoAccountFound(false)
       }
     } else {
-      // Check if profile exists
-      const user = data.user
-      if (user) {
-        const { data: profile } = await supabase.from('profiles').select('id').eq('user_id', user.id).single()
-        if (!profile) {
-          router.push('/profile')
-        } else {
-          router.push('/')
-        }
-      }
+      router.push('/')
       router.refresh()
     }
   }

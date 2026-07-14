@@ -11,32 +11,14 @@ export default function AuthCallback() {
   useEffect(() => {
     const { data: listener } = supabase.auth.onAuthStateChange((event) => {
       if (event === 'SIGNED_IN') {
-        // Check if profile exists, redirect to profile if not
-        supabase.auth.getUser().then(({ data: { user } }) => {
-          if (user) {
-            supabase.from('profiles').select('id').eq('user_id', user.id).single().then(({ data: profile }) => {
-              if (!profile) {
-                router.push('/profile')
-              } else {
-                router.push('/')
-              }
-            })
-          }
-        })
+        router.push('/')
       }
     })
 
     // Fallback in case the event already fired before this mounted
     supabase.auth.getSession().then(({ data }) => {
       if (data.session) {
-        const user = data.session.user
-        supabase.from('profiles').select('id').eq('user_id', user.id).single().then(({ data: profile }) => {
-          if (!profile) {
-            router.push('/profile')
-          } else {
-            router.push('/')
-          }
-        })
+        router.push('/')
       } else {
         setMessage('Something went wrong confirming your account. Try logging in.')
       }
