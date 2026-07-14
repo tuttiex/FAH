@@ -13,6 +13,7 @@ interface Property {
   address: string
   toilets: number
   units_available: number
+  image_urls?: string[]
   created_at: string
 }
 
@@ -30,6 +31,8 @@ export default function ListPage() {
     toilets: '',
     units_available: '',
   })
+  const [selectedImages, setSelectedImages] = useState<File[]>([])
+  const [uploading, setUploading] = useState(false)
   const [submitMessage, setSubmitMessage] = useState('')
 
   useEffect(() => {
@@ -68,9 +71,42 @@ export default function ListPage() {
     }
   }
 
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || [])
+    setSelectedImages(prev => [...prev, ...files])
+  }
+
+  const uploadImages = async (): Promise<string[]> => {
+    if (selectedImages.length === 0) return []
+    
+    setUploading(true)
+    const uploadedUrls: string[] = []
+    
+    for (const file of selectedImages) {
+      const fileName = `${Date.now()}-${file.name}`
+      const { data, error } = await supabase.storage
+        .from('property-images')
+        .upload(fileName, file)
+      
+      if (data) {
+        const { data: publicUrl } = supabase.storage
+          .from('property-images')
+          .getPublicUrl(data.path)
+        if (publicUrl) {
+          uploadedUrls.push(publicUrl.publicUrl)
+        }
+      }
+    }
+    
+    setUploading(false)
+    return uploadedUrls
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!user) return
+
+    const imageUrls = await uploadImages()
 
     const { error } = await supabase.from('properties').insert({
       ...formData,
@@ -78,6 +114,7 @@ export default function ListPage() {
       toilets: parseInt(formData.toilets),
       units_available: parseInt(formData.units_available),
       user_id: user.id,
+      image_urls: imageUrls,
     })
 
     if (error) {
@@ -85,6 +122,7 @@ export default function ListPage() {
     } else {
       setSubmitMessage('Property listed successfully!')
       setFormData({ property_type: '', property_details: '', description: '', price: '', address: '', toilets: '', units_available: '' })
+      setSelectedImages([])
       setShowForm(false)
       fetchProperties()
     }
@@ -196,20 +234,27 @@ export default function ListPage() {
                     className="border rounded px-4 py-2 w-full"
                   />
                   
-                  <button
-                    type="button"
-                    className="px-6 py-2 rounded-full text-white mt-2 w-1/2"
-                    style={{ backgroundColor: '#12AD5C' }}
-                  >
-                    Upload Images
-                  </button>
+                  <p className="font-medium">Upload Property Images</p>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={handleImageSelect}
+                    className="border rounded px-4 py-2 w-full"
+                  />
+                  {selectedImages.length > 0 && (
+                    <p className="text-sm text-gray-600">{selectedImages.length} image(s) selected</p>
+                  )}
                   
                   <button
                     type="submit"
-                    className="px-6 py-2 rounded-full text-white mt-2"
+                    disabled={uploading}
+                    className={`px-6 py-2 rounded-full text-white mt-2 transition-opacity ${
+                      uploading ? 'opacity-60 cursor-not-allowed' : ''
+                    }`}
                     style={{ backgroundColor: '#12AD5C' }}
                   >
-                    List Property
+                    {uploading ? 'Uploading...' : 'List Property'}
                   </button>
                 </div>
                 
@@ -229,6 +274,13 @@ export default function ListPage() {
                     <h3 className="font-semibold text-lg">{prop.property_type}</h3>
                     <p className="text-ink-soft text-sm">{prop.address}</p>
                     <p className="font-bold text-green mt-1">₦{prop.price.toLocaleString()}</p>
+                    {prop.image_urls && prop.image_urls.length > 0 && (
+                      <div className="mt-2 flex gap-2 overflow-x-auto">
+                        {prop.image_urls.map((url, index) => (
+                          <img key={index} src={url} alt={`Property ${index + 1}`} className="w-20 h-20 object-cover rounded" />
+                        ))}
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
