@@ -42,9 +42,12 @@ export default function RentPage() {
   )
 
   return (
-    <main className="flex-1 px-6 py-10">
+    <main className="flex-1 px-4 py-16">
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold mb-6">Find Your Home</h1>
+        <div className="mb-8 space-y-2">
+          <h1 className="font-display font-bold text-3xl text-on-surface">Find Your Home</h1>
+          <p className="text-on-surface-variant">Browse our curated selection of properties.</p>
+        </div>
         
         <div className="mb-6">
           <input
@@ -52,29 +55,29 @@ export default function RentPage() {
             placeholder="Search by location, type, or description..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="border rounded px-4 py-2 w-full max-w-md"
+            className="w-full max-w-md px-4 py-3 border border-outline-variant rounded-xl focus:outline-none focus:ring-2 focus:ring-primary"
           />
         </div>
 
         {loading ? (
-          <p>Loading properties...</p>
+          <p className="text-on-surface-variant">Loading properties...</p>
         ) : filteredProperties.length === 0 ? (
-          <p className="text-ink-soft">No properties found. {searchTerm ? 'Try a different search.' : 'Be the first to list a property!'}</p>
+          <p className="text-on-surface-variant">No properties found. {searchTerm ? 'Try a different search.' : 'Be the first to list a property!'}</p>
         ) : (
           <div className="grid gap-6">
             {filteredProperties.map((prop) => (
-              <div key={prop.id} className="p-6 border border-green-tint-strong rounded-lg hover:shadow-md transition-shadow">
-                <h2 className="font-semibold text-xl mb-2">{prop.property_type} - {prop.property_details}</h2>
-                <p className="text-ink-soft text-sm mb-3">{prop.address}</p>
+              <div key={prop.id} className="p-6 bg-surface-bright rounded-2xl shadow-sm border border-outline-variant/30 hover:shadow-md transition-shadow">
+                <h2 className="font-semibold text-xl mb-2 text-on-surface">{prop.property_type} - {prop.property_details}</h2>
+                <p className="text-on-surface-variant text-sm mb-3">{prop.address}</p>
                 <p className="text-gray-700 mb-4">{prop.description}</p>
                 <div className="flex justify-between items-center">
-                  <span className="font-bold text-green text-lg">₦{prop.price.toLocaleString()}</span>
-                  <span className="text-sm text-ink-soft">{prop.toilets} toilet • {prop.units_available} unit(s) available</span>
+                  <span className="font-bold text-primary text-lg">₦{prop.price.toLocaleString()}</span>
+                  <span className="text-sm text-on-surface-variant">{prop.toilets} toilet • {prop.units_available} unit(s) available</span>
                 </div>
                 {prop.image_urls && prop.image_urls.length > 0 && (
                   <div className="mt-3 flex gap-2 overflow-x-auto">
                     {prop.image_urls.map((url, index) => (
-                      <img key={index} src={url} alt={`Property ${index + 1}`} className="w-20 h-20 object-cover rounded" />
+                      <img key={index} src={url} alt={`Property ${index + 1}`} className="w-20 h-20 object-cover rounded-lg" />
                     ))}
                   </div>
                 )}
