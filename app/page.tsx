@@ -167,20 +167,32 @@ export default function Home() {
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6 h-auto md:h-[600px]">
-          {/* Bento Item 1 */}
-          <div className="md:col-span-8 group relative rounded-2xl overflow-hidden shadow-sm border border-secondary-container/50 bg-secondary-container/20">
+          {/* Bento Item 1 - Luxury Homes */}
+          <div className="md:col-span-4 group relative rounded-2xl overflow-hidden shadow-sm border border-secondary-container/50 bg-secondary-container/20">
             <div className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110" 
-                 style={{ backgroundImage: "url('https://images.unsplash.com/photo-1560518883-46a0e18d7b5d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80')" }}>
+                 style={{ backgroundImage: "url('https://images.unsplash.com/photo-1560518883-46a0e18d7b5d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80')" }}>
             </div>
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
             <div className="absolute bottom-0 left-0 p-8 text-white">
               <span className="px-3 py-1 bg-primary text-white rounded-full font-semibold text-xs mb-3 inline-block">PREMIUM</span>
-              <h3 className="font-display font-bold text-2xl mb-2">Luxury Homes</h3>
-              <p className="font-base text-base text-white/80 max-w-md">Experience elevated living in our exclusively curated properties.</p>
+              <h3 className="font-display font-bold text-xl mb-2">Luxury Homes</h3>
+              <p className="font-base text-base text-white/80">Experience elevated living in our curated properties.</p>
             </div>
           </div>
           
-          {/* Bento Item 2 */}
+          {/* Bento Item 2 - Personal Homes */}
+          <div className="md:col-span-4 group relative rounded-2xl overflow-hidden shadow-sm border border-secondary-container/50">
+            <div className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110" 
+                 style={{ backgroundImage: "url('https://images.unsplash.com/photo-1564013737116-d26613c0a412?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80')" }}>
+            </div>
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+            <div className="absolute bottom-0 left-0 p-8 text-white">
+              <h3 className="font-display font-bold text-xl mb-2">Personal Homes</h3>
+              <p className="font-base text-base text-white/80">Cozy and comfortable homes for everyday living.</p>
+            </div>
+          </div>
+          
+          {/* Bento Item 3 - Family Homes */}
           <div className="md:col-span-4 group relative rounded-2xl overflow-hidden shadow-sm border border-secondary-container/50">
             <div className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110" 
                  style={{ backgroundImage: "url('https://images.unsplash.com/photo-1564013737116-d26613c0a412?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80')" }}>
@@ -192,7 +204,7 @@ export default function Home() {
             </div>
           </div>
           
-          {/* Bento Item 3 */}
+          {/* Bento Item 4 - Commercial Shops */}
           <div className="md:col-span-4 group relative rounded-2xl overflow-hidden shadow-sm border border-secondary-container/50">
             <div className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110" 
                  style={{ backgroundImage: "url('https://images.unsplash.com/photo-1560184897-697e54a20a0f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80')" }}>
@@ -204,7 +216,7 @@ export default function Home() {
             </div>
           </div>
           
-          {/* Bento Item 4 */}
+          {/* Bento Item 5 - Land Properties */}
           <div className="md:col-span-8 group relative rounded-2xl overflow-hidden shadow-sm border border-secondary-container/50 bg-secondary-container/20">
             <div className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110" 
                  style={{ backgroundImage: "url('https://images.unsplash.com/photo-1500076037252-9b7d6c07840c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80')" }}>
