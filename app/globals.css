@@ -20,8 +20,25 @@
   --font-display: var(--font-space-grotesk);
 }
 
+@theme {
+  --color-primary: #006d37;
+  --color-primary-container: #12ad5c;
+  --color-on-primary: #ffffff;
+  --color-on-surface: #1c1b1b;
+  --color-on-surface-variant: #3d4a3f;
+  --color-surface: #fcf9f8;
+  --color-surface-bright: #fcf9f8;
+  --color-surface-container: #f0eded;
+  --color-outline: #6d7b6e;
+  --color-outline-variant: #bccabb;
+}
+
 body {
   background: var(--white);
   color: var(--ink);
   font-family: var(--font-sans);
+}
+
+.hero-overlay {
+  background: linear-gradient(to top, rgba(0,0,0,0.8), rgba(0,0,0,0.2), transparent);
 }
