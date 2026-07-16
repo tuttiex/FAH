@@ -62,7 +62,7 @@ export default function Home() {
       <section className="relative min-h-[90vh] flex items-center justify-center text-center px-4 overflow-hidden">
         <div className="absolute inset-0 z-0">
           <div className="w-full h-full bg-cover bg-center bg-no-repeat transition-transform duration-1000 hover:scale-105" 
-               style={{ backgroundImage: "url('https://images.unsplash.com/photo-1560518883-46a0e18d7b5d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80')" }}>
+               style={{ backgroundImage: "url('/FAH%20homepage%20background.jpg')" }}>
           </div>
           <div className="absolute inset-0 hero-overlay"></div>
         </div>
