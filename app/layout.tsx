@@ -17,6 +17,11 @@ const spaceGrotesk = Space_Grotesk({
 export const metadata: Metadata = {
   title: "FAH — list and find a home",
   description: "The best place to list and find a home",
+  icons: {
+    icon: "/favicon.png",
+    shortcut: "/favicon.png",
+    apple: "/favicon.png",
+  },
 };
 
 export default function RootLayout({
