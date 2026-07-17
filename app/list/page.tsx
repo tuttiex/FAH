@@ -42,25 +42,24 @@ export default function ListPage() {
       const { data: { user } } = await supabase.auth.getUser()
       setUser(user)
       
-      if (user) {
-        // Check if profile is complete
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('first_name, surname, email, proof_of_identity')
-          .eq('user_id', user.id)
-          .single()
-        
-        const isProfileComplete = profile && 
-          profile.first_name && 
-          profile.surname && 
-          profile.email && 
-          profile.proof_of_identity
-        
-        if (!isProfileComplete) {
-          router.push('/profile')
-          return
-        }
+    if (user) {
+      // Check if profile is complete (proof_of_identity is now optional)
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('first_name, surname, email')
+        .eq('user_id', user.id)
+        .single()
+      
+      const isProfileComplete = profile && 
+        profile.first_name && 
+        profile.surname && 
+        profile.email
+      
+      if (!isProfileComplete) {
+        router.push('/profile')
+        return
       }
+    }
       
       fetchProperties()
       setLoading(false)
@@ -153,52 +152,59 @@ export default function ListPage() {
   if (loading) {
     return (
       <main className="flex-1 flex items-center justify-center">
-        <p className="text-gray-600">Loading...</p>
+        <p className="text-on-surface-variant">Loading...</p>
       </main>
     )
   }
 
   return (
-    <main className="flex-1 px-6 py-10">
+    <main className="flex-1 px-4 py-16">
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold mb-6">List Your Property</h1>
-        
-        {user ? (
-          <>
+        <div className="mb-8 flex flex-col md:flex-row justify-between items-end gap-4">
+          <div className="space-y-2">
+            <h1 className="font-display font-bold text-3xl text-on-surface">List Your Property</h1>
+            <p className="text-on-surface-variant">Add your property to reach potential tenants.</p>
+          </div>
+          {user && (
             <button
               onClick={() => setShowForm(!showForm)}
-              className="mb-6 px-6 py-2 rounded-full text-white transition-opacity"
-              style={{ backgroundColor: '#12AD5C' }}
+              className="px-6 py-3 bg-primary-container text-white rounded-xl font-semibold transition-all duration-150 active:scale-[0.98]"
             >
               {showForm ? 'Cancel' : 'Add New Property'}
             </button>
-
+          )}
+        </div>
+        
+        {user ? (
+          <>
             {showForm && (
-              <form onSubmit={handleSubmit} className="mb-8 p-6 border border-green-tint-strong rounded-lg">
+              <form onSubmit={handleSubmit} className="mb-8 p-6 bg-surface-bright rounded-2xl shadow-sm border border-outline-variant/30">
                 <div className="grid gap-4">
-                  <p className="font-medium">Select Property Type</p>
-                  <select
-                    name="property_type"
-                    value={formData.property_type}
-                    onChange={handleInputChange}
-                    required
-                    className="border rounded px-4 py-2 w-full"
-                  >
-                    <option value="" disabled>Select Property Type</option>
-                    <option value="House">House</option>
-                    <option value="Shop">Shop</option>
-                    <option value="Land">Land</option>
-                  </select>
+                  <div className="space-y-2">
+                    <label className="text-sm font-semibold text-on-surface">Property Type *</label>
+                    <select
+                      name="property_type"
+                      value={formData.property_type}
+                      onChange={handleInputChange}
+                      required
+                      className="w-full px-4 py-3 border border-outline-variant rounded-xl focus:outline-none focus:ring-2 focus:ring-primary"
+                    >
+                      <option value="" disabled>Select Property Type</option>
+                      <option value="House">House</option>
+                      <option value="Shop">Shop</option>
+                      <option value="Land">Land</option>
+                    </select>
+                  </div>
                   
                   {formData.property_type && (
-                    <>
-                      <p className="font-medium">Select Property Details</p>
+                    <div className="space-y-2">
+                      <label className="text-sm font-semibold text-on-surface">Property Details *</label>
                       <select
                         name="property_details"
                         value={formData.property_details}
                         onChange={handleInputChange}
                         required
-                        className="border rounded px-4 py-2 w-full"
+                        className="w-full px-4 py-3 border border-outline-variant rounded-xl focus:outline-none focus:ring-2 focus:ring-primary"
                       >
                         <option value="" disabled>Select Property Details</option>
                         {getPropertyDetailsOptions().map((option) => (
@@ -207,105 +213,118 @@ export default function ListPage() {
                           </option>
                         ))}
                       </select>
-                    </>
+                    </div>
                   )}
                   
-                  <p className="font-medium">Further description of property details</p>
-                  <textarea
-                    name="description"
-                    placeholder="Description"
-                    value={formData.description}
-                    onChange={handleInputChange}
-                    required
-                    className="border rounded px-4 py-2 w-full h-24"
-                  />
+                  <div className="space-y-2">
+                    <label className="text-sm font-semibold text-on-surface">Description *</label>
+                    <textarea
+                      name="description"
+                      placeholder="Describe your property..."
+                      value={formData.description}
+                      onChange={handleInputChange}
+                      required
+                      className="w-full px-4 py-3 border border-outline-variant rounded-xl focus:outline-none focus:ring-2 focus:ring-primary h-24"
+                    />
+                  </div>
                   
-                  <p className="font-medium">Number of toilet facility</p>
-                  <input
-                    type="number"
-                    name="toilets"
-                    placeholder="Number of toilets"
-                    value={formData.toilets}
-                    onChange={handleInputChange}
-                    required
-                    className="border rounded px-4 py-2 w-full"
-                  />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-sm font-semibold text-on-surface">Toilets *</label>
+                      <input
+                        type="number"
+                        name="toilets"
+                        placeholder="Number of toilets"
+                        value={formData.toilets}
+                        onChange={handleInputChange}
+                        required
+                        className="w-full px-4 py-3 border border-outline-variant rounded-xl focus:outline-none focus:ring-2 focus:ring-primary"
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <label className="text-sm font-semibold text-on-surface">Price (₦) *</label>
+                      <input
+                        type="number"
+                        name="price"
+                        placeholder="Price"
+                        value={formData.price}
+                        onChange={handleInputChange}
+                        required
+                        className="w-full px-4 py-3 border border-outline-variant rounded-xl focus:outline-none focus:ring-2 focus:ring-primary"
+                      />
+                    </div>
+                  </div>
                   
-                  <p className="font-medium">Price</p>
-                  <input
-                    type="number"
-                    name="price"
-                    placeholder="Price (Naira)"
-                    value={formData.price}
-                    onChange={handleInputChange}
-                    required
-                    className="border rounded px-4 py-2 w-full"
-                  />
+                  <div className="space-y-2">
+                    <label className="text-sm font-semibold text-on-surface">Address *</label>
+                    <input
+                      type="text"
+                      name="address"
+                      placeholder="Property address"
+                      value={formData.address}
+                      onChange={handleInputChange}
+                      required
+                      className="w-full px-4 py-3 border border-outline-variant rounded-xl focus:outline-none focus:ring-2 focus:ring-primary"
+                    />
+                  </div>
                   
-                  <p className="font-medium">Address</p>
-                  <input
-                    type="text"
-                    name="address"
-                    placeholder="Address"
-                    value={formData.address}
-                    onChange={handleInputChange}
-                    required
-                    className="border rounded px-4 py-2 w-full"
-                  />
+                  <div className="space-y-2">
+                    <label className="text-sm font-semibold text-on-surface">Units Available *</label>
+                    <input
+                      type="number"
+                      name="units_available"
+                      placeholder="Number of units"
+                      value={formData.units_available}
+                      onChange={handleInputChange}
+                      required
+                      className="w-full px-4 py-3 border border-outline-variant rounded-xl focus:outline-none focus:ring-2 focus:ring-primary"
+                    />
+                  </div>
                   
-                  <p className="font-medium">Number/Units available</p>
-                  <input
-                    type="number"
-                    name="units_available"
-                    placeholder="Number of units available"
-                    value={formData.units_available}
-                    onChange={handleInputChange}
-                    required
-                    className="border rounded px-4 py-2 w-full"
-                  />
-                  
-                  <p className="font-medium">Upload Property Images</p>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    onChange={handleImageSelect}
-                    className="border rounded px-4 py-2 w-full"
-                  />
-                  {selectedImages.length > 0 && (
-                    <p className="text-sm text-gray-600">{selectedImages.length} image(s) selected</p>
-                  )}
+                  <div className="space-y-2">
+                    <label className="text-sm font-semibold text-on-surface">Upload Property Images</label>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      onChange={handleImageSelect}
+                      className="w-full px-4 py-3 border border-outline-variant rounded-xl focus:outline-none focus:ring-2 focus:ring-primary"
+                    />
+                    {selectedImages.length > 0 && (
+                      <p className="text-xs text-on-surface-variant">{selectedImages.length} image(s) selected</p>
+                    )}
+                  </div>
                   
                   <button
                     type="submit"
                     disabled={uploading}
-                    className={`px-6 py-2 rounded-full text-white mt-2 transition-opacity ${
+                    className={`w-full py-3 px-6 bg-primary text-white rounded-xl font-semibold transition-all duration-150 active:scale-[0.98] ${
                       uploading ? 'opacity-60 cursor-not-allowed' : ''
                     }`}
-                    style={{ backgroundColor: '#12AD5C' }}
                   >
                     {uploading ? 'Uploading...' : 'List Property'}
                   </button>
                 </div>
                 
-                {submitMessage && <p className="mt-4 text-sm text-gray-600">{submitMessage}</p>}
+                {submitMessage && <p className="mt-4 text-sm text-center text-on-surface-variant">{submitMessage}</p>}
               </form>
             )}
 
-            <h2 className="text-2xl font-semibold mb-4">Your Properties</h2>
+            <h2 className="text-2xl font-semibold mb-4 text-on-surface">Your Properties</h2>
             {properties.length === 0 ? (
-              <p className="text-ink-soft">No properties listed yet. Add your first property above!</p>
+              <p className="text-on-surface-variant">No properties listed yet. Add your first property above!</p>
             ) : (
               <div className="grid gap-4">
                 {properties.map((prop) => (
-                  <div key={prop.id} className="p-4 border border-green-tint-strong rounded-lg">
-                    <h3 className="font-semibold text-lg">{prop.property_type}</h3>
-                    <p className="text-ink-soft text-sm">{prop.address}</p>
-                    <p className="font-bold text-green mt-1">₦{prop.price.toLocaleString()}</p>
+                  <div key={prop.id} className="p-6 bg-surface-bright rounded-2xl shadow-sm border border-outline-variant/30 hover:shadow-md transition-shadow">
+                    <h3 className="font-semibold text-lg text-on-surface">{prop.property_type} - {prop.property_details}</h3>
+                    <p className="text-on-surface-variant text-sm">{prop.address}</p>
+                    <p className="font-bold text-primary mt-1">₦{prop.price.toLocaleString()}</p>
                     {prop.image_urls && prop.image_urls.length > 0 && (
-                      <div className="mt-2 flex gap-2 overflow-x-auto">
+                      <div className="mt-3 flex gap-2 overflow-x-auto">
                         {prop.image_urls.map((url, index) => (
-                          <img key={index} src={url} alt={`Property ${index + 1}`} className="w-20 h-20 object-cover rounded" />
+                          <img key={index} src={url} alt={`Property ${index + 1}`} className="w-20 h-20 object-cover rounded-lg" />
                         ))}
                       </div>
                     )}
@@ -316,8 +335,8 @@ export default function ListPage() {
           </>
         ) : (
           <div className="text-center py-10">
-            <p className="text-lg mb-4">Please log in to list your property</p>
-            <a href="/login" className="px-6 py-2 rounded-full text-white inline-block" style={{ backgroundColor: '#12AD5C' }}>
+            <p className="text-lg mb-4 text-on-surface">Please log in to list your property</p>
+            <a href="/login" className="px-6 py-3 bg-primary-container text-white rounded-xl font-semibold inline-block">
               Log In
             </a>
           </div>

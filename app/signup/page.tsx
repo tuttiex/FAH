@@ -91,58 +91,74 @@ export default function SignUp() {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center flex-1 px-6 py-20">
-      <h1 className="text-2xl font-bold mb-6">Create your FAH account</h1>
-      <input
-        type="email"
-        placeholder="Email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        className="border rounded px-4 py-2 mb-3 w-full max-w-sm"
-      />
-      <input
-        type="password"
-        placeholder="Password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        className="border rounded px-4 py-2 mb-4 w-full max-w-sm"
-      />
-      <button
-        onClick={handleSignUp}
-        disabled={loading}
-        className={`px-6 py-2 rounded-full text-white w-full max-w-sm transition-opacity ${
-          loading ? 'opacity-60 cursor-not-allowed' : ''
-        }`}
-        style={{ backgroundColor: '#12AD5C' }}
-      >
-        {loading ? 'Signing up…' : 'Sign Up'}
-      </button>
-      {message && (
-        <div className="mt-4 text-center">
-          <p className="text-sm text-gray-600">{message}</p>
-          {signupSuccess && (
-            <button
-              onClick={handleResend}
-              disabled={!canResend}
-              className={`mt-2 px-4 py-1 rounded text-sm ${
-                canResend
-                  ? 'text-[#12AD5C] hover:underline'
-                  : 'text-gray-400 cursor-not-allowed'
-              }`}
-            >
-              {canResend ? 'Resend confirmation email' : `Resend in ${countdown}s`}
-            </button>
-          )}
-          {accountExists && (
-            <a
-              href="/login"
-              className="mt-2 inline-block text-sm text-[#12AD5C] hover:underline"
-            >
-              Log in instead
-            </a>
-          )}
+    <main className="flex-1 flex items-center justify-center px-4">
+      <div className="w-full max-w-md space-y-6">
+        <div className="text-center space-y-2">
+          <h1 className="font-display font-bold text-3xl text-on-surface">Create your FAH account</h1>
+          <p className="text-on-surface-variant">Join us to find or list your perfect home.</p>
         </div>
-      )}
-    </div>
+        
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <label className="text-sm font-semibold text-on-surface">Email</label>
+            <input
+              type="email"
+              placeholder="Enter your email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full px-4 py-3 border border-outline-variant rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+            />
+          </div>
+          
+          <div className="space-y-2">
+            <label className="text-sm font-semibold text-on-surface">Password</label>
+            <input
+              type="password"
+              placeholder="Create a password (min 6 characters)"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full px-4 py-3 border border-outline-variant rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+            />
+          </div>
+          
+          <button
+            onClick={handleSignUp}
+            disabled={loading}
+            className={`w-full flex items-center justify-center gap-2 py-3 px-6 bg-primary-container text-white rounded-xl font-semibold transition-all duration-150 active:scale-[0.98] ${
+              loading ? 'opacity-60 cursor-not-allowed' : ''
+            }`}
+          >
+            {loading ? 'Signing up…' : 'Sign Up'}
+          </button>
+        </div>
+        
+        {message && (
+          <div className="text-center">
+            <p className="text-sm text-on-surface-variant">{message}</p>
+            {signupSuccess && (
+              <button
+                onClick={handleResend}
+                disabled={!canResend}
+                className={`mt-2 px-4 py-1 rounded text-sm ${
+                  canResend
+                    ? 'text-primary hover:underline'
+                    : 'text-on-surface-variant/40 cursor-not-allowed'
+                }`}
+              >
+                {canResend ? 'Resend confirmation email' : `Resend in ${countdown}s`}
+              </button>
+            )}
+            {accountExists && (
+              <a
+                href="/login"
+                className="mt-2 inline-block text-sm text-primary hover:underline"
+              >
+                Log in instead
+              </a>
+            )}
+          </div>
+        )}
+      </div>
+    </main>
   )
 }
