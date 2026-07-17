@@ -15,18 +15,17 @@ export default function Home() {
       setUser(user)
       
       if (user) {
-        // Check if profile is complete
+        // Check if profile is complete (proof_of_identity is now optional)
         const { data: profile } = await supabase
           .from('profiles')
-          .select('first_name, surname, email, proof_of_identity')
+          .select('first_name, surname, email')
           .eq('user_id', user.id)
           .single()
         
         const isProfileComplete = profile && 
           profile.first_name && 
           profile.surname && 
-          profile.email && 
-          profile.proof_of_identity
+          profile.email
         
         if (!isProfileComplete) {
           router.push('/profile')
@@ -137,11 +136,11 @@ export default function Home() {
               </svg>
               BUDGET
             </label>
-            <input 
-              type="text" 
-              placeholder="₦500,000 - ₦2,000,000" 
-              className="w-full bg-transparent border-none focus:ring-0 font-base text-base p-0 placeholder:text-on-surface-variant/40"
-            />
+               <input 
+               type="text" 
+               placeholder="₦100,000 - ₦2,000,000" 
+               className="w-full bg-transparent border-none focus:ring-0 font-base text-base p-0 placeholder:text-on-surface-variant/40"
+             />
           </div>
           <div className="flex items-end">
             <button className="w-full py-4 bg-primary text-white rounded-xl font-semibold text-base active:scale-[0.96] transition-transform flex items-center justify-center gap-2">

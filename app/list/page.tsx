@@ -42,25 +42,24 @@ export default function ListPage() {
       const { data: { user } } = await supabase.auth.getUser()
       setUser(user)
       
-      if (user) {
-        // Check if profile is complete
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('first_name, surname, email, proof_of_identity')
-          .eq('user_id', user.id)
-          .single()
-        
-        const isProfileComplete = profile && 
-          profile.first_name && 
-          profile.surname && 
-          profile.email && 
-          profile.proof_of_identity
-        
-        if (!isProfileComplete) {
-          router.push('/profile')
-          return
-        }
+    if (user) {
+      // Check if profile is complete (proof_of_identity is now optional)
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('first_name, surname, email')
+        .eq('user_id', user.id)
+        .single()
+      
+      const isProfileComplete = profile && 
+        profile.first_name && 
+        profile.surname && 
+        profile.email
+      
+      if (!isProfileComplete) {
+        router.push('/profile')
+        return
       }
+    }
       
       fetchProperties()
       setLoading(false)
@@ -182,7 +181,7 @@ export default function ListPage() {
               <form onSubmit={handleSubmit} className="mb-8 p-6 bg-surface-bright rounded-2xl shadow-sm border border-outline-variant/30">
                 <div className="grid gap-4">
                   <div className="space-y-2">
-                    <label className="text-sm font-semibold text-on-surface">Property Type</label>
+                    <label className="text-sm font-semibold text-on-surface">Property Type *</label>
                     <select
                       name="property_type"
                       value={formData.property_type}
@@ -199,7 +198,7 @@ export default function ListPage() {
                   
                   {formData.property_type && (
                     <div className="space-y-2">
-                      <label className="text-sm font-semibold text-on-surface">Property Details</label>
+                      <label className="text-sm font-semibold text-on-surface">Property Details *</label>
                       <select
                         name="property_details"
                         value={formData.property_details}
@@ -218,7 +217,7 @@ export default function ListPage() {
                   )}
                   
                   <div className="space-y-2">
-                    <label className="text-sm font-semibold text-on-surface">Description</label>
+                    <label className="text-sm font-semibold text-on-surface">Description *</label>
                     <textarea
                       name="description"
                       placeholder="Describe your property..."
@@ -231,7 +230,7 @@ export default function ListPage() {
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <label className="text-sm font-semibold text-on-surface">Toilets</label>
+                      <label className="text-sm font-semibold text-on-surface">Toilets *</label>
                       <input
                         type="number"
                         name="toilets"
@@ -244,7 +243,7 @@ export default function ListPage() {
                     </div>
                     
                     <div className="space-y-2">
-                      <label className="text-sm font-semibold text-on-surface">Price (₦)</label>
+                      <label className="text-sm font-semibold text-on-surface">Price (₦) *</label>
                       <input
                         type="number"
                         name="price"
@@ -258,7 +257,7 @@ export default function ListPage() {
                   </div>
                   
                   <div className="space-y-2">
-                    <label className="text-sm font-semibold text-on-surface">Address</label>
+                    <label className="text-sm font-semibold text-on-surface">Address *</label>
                     <input
                       type="text"
                       name="address"
@@ -271,7 +270,7 @@ export default function ListPage() {
                   </div>
                   
                   <div className="space-y-2">
-                    <label className="text-sm font-semibold text-on-surface">Units Available</label>
+                    <label className="text-sm font-semibold text-on-surface">Units Available *</label>
                     <input
                       type="number"
                       name="units_available"
