@@ -145,7 +145,7 @@ export default function ProfilePage() {
         
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <label className="text-sm font-semibold text-on-surface">First Name</label>
+            <label className="text-sm font-semibold text-on-surface">First Name *</label>
             <input
               type="text"
               name="first_name"
@@ -158,7 +158,7 @@ export default function ProfilePage() {
           </div>
           
           <div className="space-y-2">
-            <label className="text-sm font-semibold text-on-surface">Surname</label>
+            <label className="text-sm font-semibold text-on-surface">Surname *</label>
             <input
               type="text"
               name="surname"
@@ -184,7 +184,7 @@ export default function ProfilePage() {
           </div>
           
           <div className="space-y-2">
-            <label className="text-sm font-semibold text-on-surface">Phone Number</label>
+            <label className="text-sm font-semibold text-on-surface">Phone Number *</label>
             <input
               type="tel"
               name="phone"
@@ -203,7 +203,6 @@ export default function ProfilePage() {
               name="proof_of_identity"
               accept="image/*"
               onChange={handleFileChange}
-              required
               className="w-full px-4 py-3 border border-outline-variant rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
             />
             {selectedFile && (
