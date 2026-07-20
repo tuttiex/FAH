@@ -68,8 +68,11 @@ export default function Home() {
 
         <div className="relative z-10 max-w-3xl space-y-4">
           <h1 className="font-display font-bold text-[clamp(32px,4.6vw,48px)] text-white drop-shadow-lg leading-tight">
-            Welcome to FAH — the best place to list and find a home
+            Welcome to FAH
           </h1>
+          <p className="font-display font-bold text-[clamp(32px,4.6vw,48px)] text-white drop-shadow-lg leading-tight">
+            The best place to list and find a home
+          </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
             <a 
               href="/list" 
