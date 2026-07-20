@@ -76,7 +76,7 @@ export default function Home() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
             <a 
               href="/list" 
-              className="flex items-center justify-center gap-2 px-8 py-4 bg-primary-container text-white rounded-xl font-semibold text-base shadow-lg transition-all duration-150 active:scale-[0.95] hover:brightness-110 w-full sm:w-auto"
+              className="flex items-center justify-center gap-2 px-8 py-4 bg-primary-container text-white rounded-xl font-semibold text-base shadow-lg transition-all duration-150 active:scale-[0.9]"
             >
               <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M9 3V15M3 9H15" stroke="#FFFFFF" strokeWidth="2" strokeLinecap="round"/>
@@ -85,7 +85,7 @@ export default function Home() {
             </a>
             <a 
               href="/rent" 
-              className="flex items-center justify-center gap-2 px-8 py-4 bg-white border-[1.5px] border-primary-container text-primary-container rounded-xl font-semibold text-base shadow-lg transition-all duration-150 active:scale-[0.95] hover:bg-primary-container/5 w-full sm:w-auto"
+              className="flex items-center justify-center gap-2 px-8 py-4 bg-white border-[1.5px] border-primary-container text-primary-container rounded-xl font-semibold text-base shadow-lg transition-all duration-150 active:scale-[0.96]"
             >
               <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <circle cx="6.5" cy="6.5" r="3.2" stroke="currentColor" strokeWidth="1.6"/>
@@ -170,7 +170,7 @@ export default function Home() {
         
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6 h-auto md:h-[600px]">
            {/* Bento Item 1 - Luxury Homes */}
-           <div className="md:col-span-4 group relative rounded-2xl overflow-hidden shadow-sm border border-secondary-container/50 bg-secondary-container/20">
+           <div className="col-span-1 md:col-span-4 h-64 md:h-full group relative rounded-2xl overflow-hidden shadow-sm border border-secondary-container/50 bg-secondary-container/20">
              <div className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110" 
                   style={{ backgroundImage: "url('/premium-bg.jpg')" }}>
              </div>
@@ -183,7 +183,7 @@ export default function Home() {
           </div>
           
           {/* Bento Item 2 - Personal Homes */}
-          <div className="md:col-span-4 group relative rounded-2xl overflow-hidden shadow-sm border border-secondary-container/50">
+          <div className="col-span-1 md:col-span-4 h-64 md:h-full group relative rounded-2xl overflow-hidden shadow-sm border border-secondary-container/50">
             <div className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110" 
                  style={{ backgroundImage: "url('https://images.unsplash.com/photo-1564013737116-d26613c0a412?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80')" }}>
             </div>
@@ -195,7 +195,7 @@ export default function Home() {
           </div>
           
           {/* Bento Item 3 - Family Homes */}
-          <div className="md:col-span-4 group relative rounded-2xl overflow-hidden shadow-sm border border-secondary-container/50">
+          <div className="col-span-1 md:col-span-4 h-64 md:h-full group relative rounded-2xl overflow-hidden shadow-sm border border-secondary-container/50">
             <div className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110" 
                  style={{ backgroundImage: "url('https://images.unsplash.com/photo-1564013737116-d26613c0a412?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80')" }}>
             </div>
@@ -207,7 +207,7 @@ export default function Home() {
           </div>
           
           {/* Bento Item 4 - Commercial Shops */}
-          <div className="md:col-span-4 group relative rounded-2xl overflow-hidden shadow-sm border border-secondary-container/50">
+          <div className="col-span-1 md:col-span-4 h-64 md:h-full group relative rounded-2xl overflow-hidden shadow-sm border border-secondary-container/50">
             <div className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110" 
                  style={{ backgroundImage: "url('https://images.unsplash.com/photo-1560184897-697e54a20a0f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80')" }}>
             </div>
@@ -219,7 +219,7 @@ export default function Home() {
           </div>
           
           {/* Bento Item 5 - Land Properties */}
-          <div className="md:col-span-8 group relative rounded-2xl overflow-hidden shadow-sm border border-secondary-container/50 bg-secondary-container/20">
+          <div className="col-span-1 md:col-span-8 h-64 md:h-full group relative rounded-2xl overflow-hidden shadow-sm border border-secondary-container/50 bg-secondary-container/20">
             <div className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110" 
                  style={{ backgroundImage: "url('https://images.unsplash.com/photo-1500076037252-9b7d6c07840c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80')" }}>
             </div>
