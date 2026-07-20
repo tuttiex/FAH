@@ -68,8 +68,11 @@ export default function Home() {
 
         <div className="relative z-10 max-w-3xl space-y-4">
           <h1 className="font-display font-bold text-[clamp(32px,4.6vw,48px)] text-white drop-shadow-lg leading-tight">
-            Welcome to FAH — the best place to list and find a home
+            Welcome to FAH
           </h1>
+          <p className="font-display font-bold text-[clamp(32px,4.6vw,48px)] text-white drop-shadow-lg leading-tight">
+            The best place to list and find a home
+          </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
             <a 
               href="/list" 
@@ -166,11 +169,11 @@ export default function Home() {
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6 h-auto md:h-[600px]">
-          {/* Bento Item 1 - Luxury Homes */}
-          <div className="md:col-span-4 group relative rounded-2xl overflow-hidden shadow-sm border border-secondary-container/50 bg-secondary-container/20">
-            <div className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110" 
-                 style={{ backgroundImage: "url('https://images.unsplash.com/photo-1560518883-46a0e18d7b5d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80')" }}>
-            </div>
+           {/* Bento Item 1 - Luxury Homes */}
+           <div className="md:col-span-4 group relative rounded-2xl overflow-hidden shadow-sm border border-secondary-container/50 bg-secondary-container/20">
+             <div className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110" 
+                  style={{ backgroundImage: "url('/premium-bg.jpg')" }}>
+             </div>
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
             <div className="absolute bottom-0 left-0 p-8 text-white">
               <span className="px-3 py-1 bg-primary text-white rounded-full font-semibold text-xs mb-3 inline-block">PREMIUM</span>
