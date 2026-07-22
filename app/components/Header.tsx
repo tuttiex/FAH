@@ -46,22 +46,22 @@ export default function Header() {
       </a>
 
       <nav className="hidden md:flex items-center gap-8">
-        {user ? (
-          <>
-            <a href="/profile" className="font-semibold text-sm text-primary border-b-2 border-primary pb-1 transition-colors duration-200">Profile</a>
-            <button 
-              onClick={handleLogout}
-              className="font-semibold text-sm text-on-surface-variant hover:text-primary transition-colors duration-200"
-            >
-              Logout
-            </button>
-          </>
-        ) : (
-          <>
-            <a href="/login" className="font-semibold text-sm text-on-surface-variant hover:text-primary transition-colors duration-200">Login</a>
-            <a href="/signup" className="font-semibold text-sm text-on-surface-variant hover:text-primary transition-colors duration-200">Sign Up</a>
-          </>
-        )}
+           {user ? (
+             <>
+               <a href="/profile/view" className="font-semibold text-sm text-primary border-b-2 border-primary pb-1 transition-colors duration-200">Profile</a>
+               <button 
+                 onClick={handleLogout}
+                 className="font-semibold text-sm text-on-surface-variant hover:text-primary transition-colors duration-200"
+               >
+                 Logout
+               </button>
+             </>
+           ) : (
+             <>
+               <a href="/login" className="font-semibold text-sm text-on-surface-variant hover:text-primary transition-colors duration-200">Login</a>
+               <a href="/signup" className="font-semibold text-sm text-on-surface-variant hover:text-primary transition-colors duration-200">Sign Up</a>
+             </>
+           )}
       </nav>
 
       <button 
@@ -79,7 +79,7 @@ export default function Header() {
         <div className="absolute top-full right-0 mt-2 w-48 bg-white border border-outline-variant rounded-lg shadow-lg z-10 md:hidden">
           {user ? (
             <>
-              <a href="/profile" className="block px-4 py-2 text-on-surface hover:bg-green-tint transition-colors">Profile</a>
+              <a href="/profile/view" className="block px-4 py-2 text-on-surface hover:bg-green-tint transition-colors">Profile</a>
               <button 
                 onClick={handleLogout}
                 className="block w-full px-4 py-2 text-left text-on-surface hover:bg-green-tint transition-colors"

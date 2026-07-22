@@ -42,6 +42,13 @@ export default function ProfilePage() {
       // Fetch existing profile
       const { data } = await supabase.from('profiles').select('*').eq('user_id', user.id).single()
       if (data) {
+        // Check if profile is complete
+        const isProfileComplete = data.first_name && data.surname && data.email
+        if (isProfileComplete) {
+          // Redirect to view page if profile is already complete
+          router.push('/profile/view')
+          return
+        }
         setProfile(data)
         setFormData({
           first_name: data.first_name || '',

@@ -23,6 +23,8 @@ export default function ListPage() {
   const [properties, setProperties] = useState<Property[]>([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
+  const [isEditing, setIsEditing] = useState(false)
+  const [editingPropertyId, setEditingPropertyId] = useState<string | null>(null)
   const [formData, setFormData] = useState({
     property_type: '',
     property_details: '',
@@ -66,7 +68,37 @@ export default function ListPage() {
     }
     
     checkUserAndProfile()
+
+    // Check for edit query parameter
+    const urlParams = new URLSearchParams(window.location.search)
+    const editId = urlParams.get('edit')
+    if (editId) {
+      loadPropertyForEdit(editId)
+    }
   }, [router])
+
+  const loadPropertyForEdit = async (propertyId: string) => {
+    const { data: prop } = await supabase
+      .from('properties')
+      .select('*')
+      .eq('id', propertyId)
+      .single()
+    
+    if (prop) {
+      setFormData({
+        property_type: prop.property_type,
+        property_details: prop.property_details,
+        description: prop.description,
+        price: prop.price.toString(),
+        address: prop.address,
+        toilets: prop.toilets.toString(),
+        units_available: prop.units_available.toString(),
+      })
+      setEditingPropertyId(propertyId)
+      setIsEditing(true)
+      setShowForm(true)
+    }
+  }
 
   const fetchProperties = async () => {
     const { data, error } = await supabase.from('properties').select('*').order('created_at', { ascending: false })
@@ -129,24 +161,57 @@ export default function ListPage() {
 
     const imageUrls = await uploadImages()
 
-    const { error } = await supabase.from('properties').insert({
-      ...formData,
-      price: parseInt(formData.price),
-      toilets: parseInt(formData.toilets),
-      units_available: parseInt(formData.units_available),
-      user_id: user.id,
-      image_urls: imageUrls,
-    })
+    if (isEditing && editingPropertyId) {
+      // Update existing property
+      const { error } = await supabase.from('properties').update({
+        ...formData,
+        price: parseInt(formData.price),
+        toilets: parseInt(formData.toilets),
+        units_available: parseInt(formData.units_available),
+        image_urls: imageUrls.length > 0 ? imageUrls : undefined,
+      }).eq('id', editingPropertyId)
 
-    if (error) {
-      setSubmitMessage('Error listing property. Please try again.')
+      if (error) {
+        setSubmitMessage('Error updating property. Please try again.')
+      } else {
+        setSubmitMessage('Property updated successfully!')
+        setFormData({ property_type: '', property_details: '', description: '', price: '', address: '', toilets: '', units_available: '' })
+        setSelectedImages([])
+        setShowForm(false)
+        setIsEditing(false)
+        setEditingPropertyId(null)
+        fetchProperties()
+      }
     } else {
-      setSubmitMessage('Property listed successfully!')
-      setFormData({ property_type: '', property_details: '', description: '', price: '', address: '', toilets: '', units_available: '' })
-      setSelectedImages([])
-      setShowForm(false)
-      fetchProperties()
+      // Create new property
+      const { error } = await supabase.from('properties').insert({
+        ...formData,
+        price: parseInt(formData.price),
+        toilets: parseInt(formData.toilets),
+        units_available: parseInt(formData.units_available),
+        user_id: user.id,
+        image_urls: imageUrls,
+      })
+
+      if (error) {
+        setSubmitMessage('Error listing property. Please try again.')
+      } else {
+        setSubmitMessage('Property listed successfully!')
+        setFormData({ property_type: '', property_details: '', description: '', price: '', address: '', toilets: '', units_available: '' })
+        setSelectedImages([])
+        setShowForm(false)
+        fetchProperties()
+      }
     }
+  }
+
+  const handleCancelEdit = () => {
+    setFormData({ property_type: '', property_details: '', description: '', price: '', address: '', toilets: '', units_available: '' })
+    setSelectedImages([])
+    setShowForm(false)
+    setIsEditing(false)
+    setEditingPropertyId(null)
+    router.push('/profile/view')
   }
 
   if (loading) {
@@ -303,9 +368,19 @@ export default function ListPage() {
                       uploading ? 'opacity-60 cursor-not-allowed' : ''
                     }`}
                   >
-                    {uploading ? 'Uploading...' : 'List Property'}
+                    {uploading ? 'Uploading...' : isEditing ? 'Update Property' : 'List Property'}
                   </button>
                 </div>
+                
+                {isEditing && (
+                  <button
+                    type="button"
+                    onClick={handleCancelEdit}
+                    className="w-full mt-2 py-2 px-4 text-on-surface-variant hover:text-primary transition-colors"
+                  >
+                    Cancel Edit
+                  </button>
+                )}
                 
                 {submitMessage && <p className="mt-4 text-sm text-center text-on-surface-variant">{submitMessage}</p>}
               </form>
