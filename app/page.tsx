@@ -3,9 +3,10 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '../lib/supabase'
+import type { User } from '@supabase/supabase-js'
 
 export default function Home() {
-  const [user, setUser] = useState<any>(null)
+  const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const router = useRouter()
 
@@ -22,7 +23,9 @@ export default function Home() {
       .eq('user_id', userId)
       .single()
     
-    if (profileError) {
+    // PGRST116 means no rows found - expected for new users
+    // Other errors should be logged
+    if (profileError && profileError.code !== 'PGRST116') {
       console.error('Error fetching profile:', profileError)
     }
     

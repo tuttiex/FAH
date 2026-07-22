@@ -26,7 +26,9 @@ export default function AuthCallback() {
           .eq('user_id', user.id)
           .single()
         
-        if (profileError) {
+        // PGRST116 means no rows found - expected for new users
+        // Other errors should be logged
+        if (profileError && profileError.code !== 'PGRST116') {
           console.error('Error fetching profile:', profileError)
         }
         
