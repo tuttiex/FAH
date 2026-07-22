@@ -45,12 +45,17 @@ export function useProfile() {
     checkUser()
     
     const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
-      setUser(session?.user || null)
-      // Check profile completeness on SIGNED_IN events
-      if (event === 'SIGNED_IN' && session?.user) {
-        checkProfileAndRedirect(session.user.id)
-      } else if (!session?.user) {
+      if (event === 'SIGNED_OUT') {
+        setUser(null)
         setProfileComplete(false)
+        setLoading(false)
+        return
+      }
+      
+      if (event === 'SIGNED_IN' && session?.user) {
+        setUser(session.user)
+        setLoading(true)
+        checkProfileAndRedirect(session.user.id)
       }
     })
     

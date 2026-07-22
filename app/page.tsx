@@ -45,9 +45,16 @@ export default function Home() {
     checkUserAndProfile()
     
     const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
-      setUser(session?.user || null)
-      // Check profile completeness on SIGNED_IN events
+      if (event === 'SIGNED_OUT') {
+        setUser(null)
+        setLoading(true)
+        router.push('/login')
+        return
+      }
+      
       if (event === 'SIGNED_IN' && session?.user) {
+        setUser(session.user)
+        setLoading(true)
         checkProfileAndRedirect(session.user.id)
       }
     })
