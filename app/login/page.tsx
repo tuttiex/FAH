@@ -15,15 +15,14 @@ export default function Login() {
   const checkProfileAndRedirect = async (userId: string) => {
     const { data: profile } = await supabase
       .from('profiles')
-      .select('first_name, surname, email, proof_of_identity')
+      .select('first_name, surname, email')
       .eq('user_id', userId)
       .single()
     
     const isProfileComplete = profile && 
       profile.first_name && 
       profile.surname && 
-      profile.email && 
-      profile.proof_of_identity
+      profile.email
     
     if (isProfileComplete) {
       router.push('/')

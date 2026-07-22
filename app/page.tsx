@@ -9,37 +9,47 @@ export default function Home() {
   const [loading, setLoading] = useState(true)
   const router = useRouter()
 
+  // Extract profile check into a reusable function
+  const checkProfileAndRedirect = async (userId: string | undefined) => {
+    if (!userId) {
+      setLoading(false)
+      return
+    }
+
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('first_name, surname, email')
+      .eq('user_id', userId)
+      .single()
+    
+    const isProfileComplete = profile && 
+      profile.first_name && 
+      profile.surname && 
+      profile.email
+    
+    if (!isProfileComplete) {
+      router.push('/profile')
+      return
+    }
+    
+    setLoading(false)
+  }
+
   useEffect(() => {
     const checkUserAndProfile = async () => {
       const { data: { user } } = await supabase.auth.getUser()
       setUser(user)
-      
-      if (user) {
-        // Check if profile is complete (proof_of_identity is now optional)
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('first_name, surname, email')
-          .eq('user_id', user.id)
-          .single()
-        
-        const isProfileComplete = profile && 
-          profile.first_name && 
-          profile.surname && 
-          profile.email
-        
-        if (!isProfileComplete) {
-          router.push('/profile')
-          return
-        }
-      }
-      
-      setLoading(false)
+      await checkProfileAndRedirect(user?.id)
     }
     
     checkUserAndProfile()
     
     const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
       setUser(session?.user || null)
+      // Check profile completeness on SIGNED_IN events
+      if (event === 'SIGNED_IN' && session?.user) {
+        checkProfileAndRedirect(session.user.id)
+      }
     })
     
     return () => {
