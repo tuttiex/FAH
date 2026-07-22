@@ -7,23 +7,70 @@ import type { User } from '@supabase/supabase-js'
 export default function Header() {
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const [user, setUser] = useState<User | null>(null)
+  const [unreadCount, setUnreadCount] = useState(0)
   
   useEffect(() => {
     const checkUser = async () => {
       const { data: { user } } = await supabase.auth.getUser()
       setUser(user)
+      
+      if (user) {
+        // Fetch unread message count
+        const { count } = await supabase
+          .from('messages')
+          .select('id', { count: 'exact' })
+          .eq('receiver_id', user.id)
+          .eq('read', false)
+        
+        setUnreadCount(count || 0)
+        
+        // Setup realtime subscription for unread count
+        const channel = supabase
+          .channel(`unread:${user.id}`)
+          .on(
+            'postgres_changes',
+            {
+              event: 'INSERT',
+              schema: 'public',
+              table: 'messages',
+              filter: `receiver_id=eq.${user.id}`,
+            },
+            () => {
+              setUnreadCount((prev) => prev + 1)
+            }
+          )
+          .on(
+            'postgres_changes',
+            {
+              event: 'UPDATE',
+              schema: 'public',
+              table: 'messages',
+              filter: `receiver_id=eq.${user.id}`,
+            },
+            () => {
+              fetchUnreadCount()
+            }
+          )
+          .subscribe()
+        
+        return () => {
+          supabase.removeChannel(channel)
+        }
+      }
     }
     
     checkUser()
-    
-    const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
-      setUser(session?.user || null)
-    })
-    
-    return () => {
-      listener?.subscription.unsubscribe()
-    }
   }, [])
+
+  const fetchUnreadCount = async () => {
+    if (!user) return
+    const { count } = await supabase
+      .from('messages')
+      .select('id', { count: 'exact' })
+      .eq('receiver_id', user.id)
+      .eq('read', false)
+    setUnreadCount(count || 0)
+  }
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
@@ -46,22 +93,30 @@ export default function Header() {
       </a>
 
       <nav className="hidden md:flex items-center gap-8">
-           {user ? (
-             <>
-               <a href="/profile/view" className="font-semibold text-sm text-primary border-b-2 border-primary pb-1 transition-colors duration-200">Profile</a>
-               <button 
-                 onClick={handleLogout}
-                 className="font-semibold text-sm text-on-surface-variant hover:text-primary transition-colors duration-200"
-               >
-                 Logout
-               </button>
-             </>
-           ) : (
-             <>
-               <a href="/login" className="font-semibold text-sm text-on-surface-variant hover:text-primary transition-colors duration-200">Login</a>
-               <a href="/signup" className="font-semibold text-sm text-on-surface-variant hover:text-primary transition-colors duration-200">Sign Up</a>
-             </>
-           )}
+        {user ? (
+          <>
+            <a href="/messages" className="font-semibold text-sm text-on-surface-variant hover:text-primary transition-colors duration-200 flex items-center gap-1">
+              <span>Messages</span>
+              {unreadCount > 0 && (
+                <span className="px-1.5 py-0.5 bg-primary text-white rounded-full text-xs font-bold">
+                  {unreadCount}
+                </span>
+              )}
+            </a>
+            <a href="/profile/view" className="font-semibold text-sm text-on-surface-variant hover:text-primary transition-colors duration-200">Profile</a>
+            <button 
+              onClick={handleLogout}
+              className="font-semibold text-sm text-on-surface-variant hover:text-primary transition-colors duration-200"
+            >
+              Logout
+            </button>
+          </>
+        ) : (
+          <>
+            <a href="/login" className="font-semibold text-sm text-on-surface-variant hover:text-primary transition-colors duration-200">Login</a>
+            <a href="/signup" className="font-semibold text-sm text-on-surface-variant hover:text-primary transition-colors duration-200">Sign Up</a>
+          </>
+        )}
       </nav>
 
       <button 
@@ -79,6 +134,14 @@ export default function Header() {
         <div className="absolute top-full right-0 mt-2 w-48 bg-white border border-outline-variant rounded-lg shadow-lg z-10 md:hidden">
           {user ? (
             <>
+              <a href="/messages" className="block px-4 py-2 text-on-surface hover:bg-green-tint transition-colors flex items-center justify-between">
+                <span>Messages</span>
+                {unreadCount > 0 && (
+                  <span className="px-1.5 py-0.5 bg-primary text-white rounded-full text-xs font-bold">
+                    {unreadCount}
+                  </span>
+                )}
+              </a>
               <a href="/profile/view" className="block px-4 py-2 text-on-surface hover:bg-green-tint transition-colors">Profile</a>
               <button 
                 onClick={handleLogout}

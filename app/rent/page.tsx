@@ -1,10 +1,13 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { supabase } from '../../lib/supabase'
+import type { User } from '@supabase/supabase-js'
 
 interface Property {
   id: string
+  user_id: string
   property_type: string
   property_details: string
   description: string
@@ -17,11 +20,19 @@ interface Property {
 }
 
 export default function RentPage() {
+  const [user, setUser] = useState<User | null>(null)
   const [properties, setProperties] = useState<Property[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
+  const router = useRouter()
 
   useEffect(() => {
+    const checkUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      setUser(user)
+    }
+    
+    checkUser()
     fetchProperties()
   }, [])
 
@@ -32,6 +43,15 @@ export default function RentPage() {
       setProperties(data)
     }
     setLoading(false)
+  }
+
+  const handleContactOwner = (property: Property) => {
+    if (!user) {
+      router.push('/login')
+      return
+    }
+    // Navigate to messages page with property context
+    router.push(`/messages/${property.user_id}?property=${property.id}`)
   }
 
   const filteredProperties = properties.filter((prop) =>
@@ -81,6 +101,12 @@ export default function RentPage() {
                     ))}
                   </div>
                 )}
+                <button
+                  onClick={() => handleContactOwner(prop)}
+                  className="mt-4 px-4 py-2 bg-primary-container text-white rounded-xl font-semibold text-sm hover:bg-primary transition-colors"
+                >
+                  Contact Owner
+                </button>
               </div>
             ))}
           </div>
