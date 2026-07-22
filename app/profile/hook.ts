@@ -18,11 +18,15 @@ export function useProfile() {
       return
     }
 
-    const { data: profile } = await supabase
+    const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('first_name, surname, email')
       .eq('user_id', userId)
       .single()
+    
+    if (profileError) {
+      console.error('Error fetching profile:', profileError)
+    }
     
     const isComplete = !!profile && !!(profile.first_name && profile.surname && profile.email)
     setProfileComplete(isComplete)
@@ -37,7 +41,12 @@ export function useProfile() {
 
   useEffect(() => {
     const checkUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
+      const { data: { user }, error: userError } = await supabase.auth.getUser()
+      
+      if (userError) {
+        console.error('Error getting user:', userError)
+      }
+      
       setUser(user)
       await checkProfileAndRedirect(user?.id)
     }

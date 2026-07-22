@@ -10,15 +10,25 @@ export default function AuthCallback() {
 
   useEffect(() => {
     const checkProfileAndRedirect = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
+      const { data: { user }, error: userError } = await supabase.auth.getUser()
+      
+      if (userError) {
+        console.error('Error getting user:', userError)
+        setMessage('Something went wrong confirming your account. Try logging in.')
+        return
+      }
       
       if (user) {
         // Check if profile is complete (proof_of_identity is now optional)
-        const { data: profile } = await supabase
+        const { data: profile, error: profileError } = await supabase
           .from('profiles')
           .select('first_name, surname, email')
           .eq('user_id', user.id)
           .single()
+        
+        if (profileError) {
+          console.error('Error fetching profile:', profileError)
+        }
         
         const isProfileComplete = profile && 
           profile.first_name && 
