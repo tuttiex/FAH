@@ -12,25 +12,6 @@ export default function Login() {
   const [loading, setLoading] = useState(false)
   const router = useRouter()
 
-  const checkProfileAndRedirect = async (userId: string) => {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('first_name, surname, email')
-      .eq('user_id', userId)
-      .single()
-    
-    const isProfileComplete = profile && 
-      profile.first_name && 
-      profile.surname && 
-      profile.email
-    
-    if (isProfileComplete) {
-      router.push('/')
-    } else {
-      router.push('/profile')
-    }
-  }
-
   const handleLogin = async () => {
     if (!email || !password) {
       setMessage('Please enter both an email and a password.')
@@ -54,9 +35,7 @@ export default function Login() {
         setNoAccountFound(false)
       }
     } else {
-      if (data.user) {
-        await checkProfileAndRedirect(data.user.id)
-      }
+      router.push('/')
       router.refresh()
     }
   }
