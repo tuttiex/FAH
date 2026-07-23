@@ -79,7 +79,7 @@ export default function Header() {
             <div className="absolute top-full right-0 mt-2 w-44 bg-white border border-outline-variant rounded-lg shadow-lg z-10">
               {user ? (
                 <>
-                  <a href="/profile/view" className="block px-4 py-2 text-on-surface hover:bg-green-tint transition-colors">Profile</a>
+                  <a href="/profile" className="block px-4 py-2 text-on-surface hover:bg-green-tint transition-colors">Profile</a>
                   <button
                     onClick={handleLogout}
                     className="block w-full px-4 py-2 text-left text-on-surface hover:bg-green-tint transition-colors"
@@ -114,7 +114,7 @@ export default function Header() {
         <div className="absolute top-full right-0 mt-2 w-48 bg-white border border-outline-variant rounded-lg shadow-lg z-10 md:hidden">
           {user ? (
             <>
-              <a href="/profile/view" className="block px-4 py-2 text-on-surface hover:bg-green-tint transition-colors">Profile</a>
+              <a href="/profile" className="block px-4 py-2 text-on-surface hover:bg-green-tint transition-colors">Profile</a>
               <button
                 onClick={handleLogout}
                 className="block w-full px-4 py-2 text-left text-on-surface hover:bg-green-tint transition-colors"
