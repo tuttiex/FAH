@@ -14,12 +14,20 @@ export default function Header() {
     const checkUser = async () => {
       const { data: { user } } = await supabase.auth.getUser()
       setUser(user)
+      if (user) {
+        fetchUnreadCount(user.id)
+      }
     }
 
     checkUser()
 
     const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
       setUser(session?.user || null)
+      if (session?.user) {
+        fetchUnreadCount(session.user.id)
+      } else {
+        setUnreadCount(0)
+      }
     })
 
     return () => {
@@ -40,9 +48,20 @@ export default function Header() {
     }
   }, [])
 
+  const fetchUnreadCount = async (userId: string) => {
+    const { count } = await supabase
+      .from('messages')
+      .select('*', { count: 'exact', head: true })
+      .eq('receiver_id', userId)
+      .eq('read', false)
+
+    setUnreadCount(count || 0)
+  }
+
   const handleLogout = async () => {
     await supabase.auth.signOut()
     setUser(null)
+    setUnreadCount(0)
     setDropdownOpen(false)
   }
 
@@ -80,6 +99,14 @@ export default function Header() {
               {user ? (
                 <>
                   <a href="/profile" className="block px-4 py-2 text-on-surface hover:bg-green-tint transition-colors">Profile</a>
+                  <a href="/messages" className="block px-4 py-2 text-on-surface hover:bg-green-tint transition-colors relative">
+                    Messages
+                    {unreadCount > 0 && (
+                      <span className="absolute top-1 right-2 px-1.5 py-0.5 bg-primary text-white rounded-full text-xs font-bold">
+                        {unreadCount}
+                      </span>
+                    )}
+                  </a>
                   <button
                     onClick={handleLogout}
                     className="block w-full px-4 py-2 text-left text-on-surface hover:bg-green-tint transition-colors"
@@ -115,6 +142,14 @@ export default function Header() {
           {user ? (
             <>
               <a href="/profile" className="block px-4 py-2 text-on-surface hover:bg-green-tint transition-colors">Profile</a>
+              <a href="/messages" className="block px-4 py-2 text-on-surface hover:bg-green-tint transition-colors relative">
+                Messages
+                {unreadCount > 0 && (
+                  <span className="absolute top-1 right-2 px-1.5 py-0.5 bg-primary text-white rounded-full text-xs font-bold">
+                    {unreadCount}
+                  </span>
+                )}
+              </a>
               <button
                 onClick={handleLogout}
                 className="block w-full px-4 py-2 text-left text-on-surface hover:bg-green-tint transition-colors"
