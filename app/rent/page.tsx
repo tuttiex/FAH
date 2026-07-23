@@ -1,7 +1,9 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { supabase } from '../../lib/supabase'
+import type { User } from '@supabase/supabase-js'
 
 interface Property {
   id: string
@@ -14,14 +16,22 @@ interface Property {
   units_available: number
   image_urls?: string[]
   created_at: string
+  user_id: string
 }
 
 export default function RentPage() {
   const [properties, setProperties] = useState<Property[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
+  const [user, setUser] = useState<User | null>(null)
+  const router = useRouter()
 
   useEffect(() => {
+    const checkUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      setUser(user)
+    }
+    checkUser()
     fetchProperties()
   }, [])
 
@@ -41,6 +51,14 @@ export default function RentPage() {
     prop.property_details.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
+  const handleContactOwner = (ownerId: string, propertyId: string) => {
+    if (!user) {
+      router.push('/login')
+      return
+    }
+    router.push(`/messages/${ownerId}?property=${propertyId}`)
+  }
+
   return (
     <main className="flex-1 px-4 py-16">
       <div className="max-w-4xl mx-auto">
@@ -48,7 +66,7 @@ export default function RentPage() {
           <h1 className="font-display font-bold text-3xl text-on-surface">Find Your Home</h1>
           <p className="text-on-surface-variant">Browse our curated selection of properties.</p>
         </div>
-        
+
         <div className="mb-6">
           <input
             type="text"
@@ -81,6 +99,12 @@ export default function RentPage() {
                     ))}
                   </div>
                 )}
+                <button
+                  onClick={() => handleContactOwner(prop.user_id, prop.id)}
+                  className="mt-4 w-full px-4 py-2 bg-primary text-white rounded-xl font-semibold hover:bg-primary/90 transition-colors"
+                >
+                  Contact Owner
+                </button>
               </div>
             ))}
           </div>

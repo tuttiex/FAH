@@ -9,7 +9,7 @@ export default function AuthCallback() {
   const [message, setMessage] = useState('Confirming your account…')
 
   useEffect(() => {
-    const checkProfileAndRedirect = async () => {
+    const handleAuthCallback = async () => {
       const { data: { user }, error: userError } = await supabase.auth.getUser()
       
       if (userError) {
@@ -19,35 +19,13 @@ export default function AuthCallback() {
       }
       
       if (user) {
-        // Check if profile is complete (proof_of_identity is now optional)
-        const { data: profile, error: profileError } = await supabase
-          .from('profiles')
-          .select('first_name, surname, email')
-          .eq('user_id', user.id)
-          .single()
-        
-        // PGRST116 means no rows found - expected for new users
-        // Other errors should be logged
-        if (profileError && profileError.code !== 'PGRST116') {
-          console.error('Error fetching profile:', profileError)
-        }
-        
-        const isProfileComplete = profile && 
-          profile.first_name && 
-          profile.surname && 
-          profile.email
-        
-        if (isProfileComplete) {
-          router.push('/')
-        } else {
-          router.push('/profile')
-        }
+        router.push('/')
       } else {
         setMessage('Something went wrong confirming your account. Try logging in.')
       }
     }
 
-    checkProfileAndRedirect()
+    handleAuthCallback()
   }, [router])
 
   return (

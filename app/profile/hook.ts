@@ -11,36 +11,6 @@ export function useProfile() {
   const [loading, setLoading] = useState(true)
   const router = useRouter()
 
-  // Extract profile check into a reusable function
-  const checkProfileAndRedirect = async (userId: string | undefined) => {
-    if (!userId) {
-      setLoading(false)
-      return
-    }
-
-    const { data: profile, error: profileError } = await supabase
-      .from('profiles')
-      .select('first_name, surname, email')
-      .eq('user_id', userId)
-      .single()
-    
-    // PGRST116 means no rows found - expected for new users
-    // Other errors should be logged
-    if (profileError && profileError.code !== 'PGRST116') {
-      console.error('Error fetching profile:', profileError)
-    }
-    
-    const isComplete = !!profile && !!(profile.first_name && profile.surname && profile.email)
-    setProfileComplete(isComplete)
-    
-    // Redirect to profile page if profile is incomplete
-    if (!isComplete) {
-      router.push('/profile')
-    }
-    
-    setLoading(false)
-  }
-
   useEffect(() => {
     const checkUser = async () => {
       const { data: { user }, error: userError } = await supabase.auth.getUser()
@@ -50,7 +20,19 @@ export function useProfile() {
       }
       
       setUser(user)
-      await checkProfileAndRedirect(user?.id)
+      
+      if (user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('first_name, surname, email')
+          .eq('user_id', user.id)
+          .single()
+        
+        const isComplete = !!profile && !!(profile?.first_name && profile?.surname && profile?.email)
+        setProfileComplete(isComplete)
+      }
+      
+      setLoading(false)
     }
     
     checkUser()
@@ -65,8 +47,8 @@ export function useProfile() {
       
       if (event === 'SIGNED_IN' && session?.user) {
         setUser(session.user)
-        setLoading(true)
-        checkProfileAndRedirect(session.user.id)
+        setProfileComplete(true)
+        setLoading(false)
       }
     })
     
