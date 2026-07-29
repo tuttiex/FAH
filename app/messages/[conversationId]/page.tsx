@@ -39,7 +39,7 @@ export default function ConversationPage({ params }: { params: { conversationId:
   const router = useRouter()
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
-  const conversationId = params.conversationId
+  const otherUserId = params.conversationId
 
   useEffect(() => {
     const checkUser = async () => {
@@ -54,7 +54,7 @@ export default function ConversationPage({ params }: { params: { conversationId:
       const { data: profile } = await supabase
         .from('profiles')
         .select('username, first_name, surname, avatar_url')
-        .eq('user_id', conversationId)
+        .eq('user_id', otherUserId)
         .maybeSingle()
 
       if (profile) {
@@ -78,13 +78,13 @@ export default function ConversationPage({ params }: { params: { conversationId:
       }
 
       // Fetch messages
-      await fetchMessages(user.id, conversationId)
+      await fetchMessages(user.id, otherUserId)
 
       // Mark messages as read
       await supabase
         .from('messages')
         .update({ read: true })
-        .eq('sender_id', conversationId)
+        .eq('sender_id', otherUserId)
         .eq('receiver_id', user.id)
         .eq('read', false)
 
@@ -92,21 +92,21 @@ export default function ConversationPage({ params }: { params: { conversationId:
     }
 
     checkUser()
-  }, [conversationId, router])
+  }, [otherUserId, router])
 
   // Setup realtime subscription after user is loaded
   useEffect(() => {
     if (!user) return
 
     const channel = supabase
-      .channel(`messages:${user.id}:${conversationId}`)
+      .channel(`messages:${user.id}:${otherUserId}`)
       .on(
         'postgres_changes',
         {
           event: 'INSERT',
           schema: 'public',
           table: 'messages',
-          filter: `sender_id=eq.${conversationId},receiver_id=eq.${user.id}`,
+          filter: `sender_id=eq.${otherUserId},receiver_id=eq.${user.id}`,
         },
         (payload) => {
           setMessages((prev) => [...prev, payload.new as Message])
@@ -117,7 +117,7 @@ export default function ConversationPage({ params }: { params: { conversationId:
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [user, conversationId])
+  }, [user, otherUserId])
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -148,7 +148,7 @@ export default function ConversationPage({ params }: { params: { conversationId:
     const optimisticMessage: Message = {
       id: tempId,
       sender_id: user.id,
-      receiver_id: conversationId,
+      receiver_id: otherUserId,
       content: message.trim(),
       created_at: new Date().toISOString(),
       read: false,
@@ -158,7 +158,7 @@ export default function ConversationPage({ params }: { params: { conversationId:
 
     const { error } = await supabase.from('messages').insert({
       sender_id: user.id,
-      receiver_id: conversationId,
+      receiver_id: otherUserId,
       content: optimisticMessage.content,
       property_id: propertyId,
     })
