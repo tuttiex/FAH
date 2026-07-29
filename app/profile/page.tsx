@@ -129,6 +129,22 @@ export default function ProfilePage() {
   const handleSave = async () => {
     if (!user) return
 
+    // Check if username is already taken by another user
+    if (formData.username && formData.username !== profile?.username) {
+      const { data: existingUser } = await supabase
+        .from('profiles')
+        .select('user_id')
+        .eq('username', formData.username)
+        .neq('user_id', user.id)
+        .maybeSingle()
+
+      if (existingUser) {
+        setMessage('Username already taken. Please choose another.')
+        setSaving(false)
+        return
+      }
+    }
+
     setSaving(true)
     let avatarUrl: string | undefined = profile?.avatar_url
 
@@ -145,7 +161,7 @@ export default function ProfilePage() {
       phone: formData.phone,
       username: formData.username,
       avatar_url: avatarUrl,
-    })
+    }, { onConflict: 'user_id' })
 
     setSaving(false)
     if (error) {
