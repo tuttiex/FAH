@@ -35,6 +35,7 @@ export default function ConversationPage({ params }: { params: { conversationId:
   const [message, setMessage] = useState('')
   const [propertyId, setPropertyId] = useState<string | null>(null)
   const [propertyInfo, setPropertyInfo] = useState<Property | null>(null)
+  const [sendError, setSendError] = useState('')
   const router = useRouter()
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
@@ -54,7 +55,7 @@ export default function ConversationPage({ params }: { params: { conversationId:
         .from('profiles')
         .select('username, first_name, surname, avatar_url')
         .eq('user_id', conversationId)
-        .single()
+        .maybeSingle()
 
       if (profile) {
         setOtherUser(profile)
@@ -70,7 +71,7 @@ export default function ConversationPage({ params }: { params: { conversationId:
           .from('properties')
           .select('property_type, property_details')
           .eq('id', propId)
-          .single()
+          .maybeSingle()
         if (prop) {
           setPropertyInfo(prop)
         }
@@ -129,6 +130,7 @@ export default function ConversationPage({ params }: { params: { conversationId:
       .or(`sender_id.eq.${myId},receiver_id.eq.${myId}`)
       .or(`sender_id.eq.${otherId},receiver_id.eq.${otherId}`)
       .order('created_at', { ascending: true })
+      .limit(100)
 
     if (data) {
       setMessages(data)
@@ -139,16 +141,33 @@ export default function ConversationPage({ params }: { params: { conversationId:
     if (!user || !message.trim() || !otherUser) return
 
     setSending(true)
-    const { error } = await supabase.from('messages').insert({
+    setSendError('')
+
+    // Optimistically add the message to local state
+    const tempId = `temp-${Date.now()}`
+    const optimisticMessage: Message = {
+      id: tempId,
       sender_id: user.id,
       receiver_id: conversationId,
       content: message.trim(),
+      created_at: new Date().toISOString(),
+      read: false,
+    }
+    setMessages((prev) => [...prev, optimisticMessage])
+    setMessage('')
+
+    const { error } = await supabase.from('messages').insert({
+      sender_id: user.id,
+      receiver_id: conversationId,
+      content: optimisticMessage.content,
       property_id: propertyId,
     })
 
     setSending(false)
-    if (!error) {
-      setMessage('')
+    if (error) {
+      // Remove the optimistic message on failure
+      setMessages((prev) => prev.filter((m) => m.id !== tempId))
+      setSendError('Failed to send message. Please try again.')
     }
   }
 
@@ -179,7 +198,6 @@ export default function ConversationPage({ params }: { params: { conversationId:
           </div>
           <div className="flex-1">
             <h2 className="font-semibold text-on-surface">{otherUser?.username || `${otherUser?.first_name} ${otherUser?.surname}`}</h2>
-            <p className="text-xs text-on-surface-variant">Online</p>
             {propertyInfo && (
               <p className="text-xs text-primary mt-1">
                 Re: {propertyInfo.property_type} - {propertyInfo.property_details}
@@ -200,13 +218,14 @@ export default function ConversationPage({ params }: { params: { conversationId:
                   msg.sender_id === user?.id
                     ? 'bg-primary-container text-white rounded-br-sm'
                     : 'bg-surface-container text-on-surface rounded-bl-sm'
-                }`}
+                } ${msg.id.startsWith('temp-') ? 'opacity-70' : ''}`}
               >
                 <p className="text-sm">{msg.content}</p>
                 <p className={`text-xs mt-1 ${
                   msg.sender_id === user?.id ? 'text-white/60' : 'text-on-surface-variant/60'
                 }`}>
                   {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  {msg.id.startsWith('temp-') && ' • Sending...'}
                 </p>
               </div>
             </div>
@@ -214,12 +233,20 @@ export default function ConversationPage({ params }: { params: { conversationId:
           <div ref={messagesEndRef} />
         </div>
 
+        {/* Send Error */}
+        {sendError && (
+          <p className="text-sm text-red-500 text-center mb-2">{sendError}</p>
+        )}
+
         {/* Message Input */}
         <div className="flex gap-2">
           <input
             type="text"
             value={message}
-            onChange={(e) => setMessage(e.target.value)}
+            onChange={(e) => {
+              setMessage(e.target.value)
+              if (sendError) setSendError('')
+            }}
             placeholder="Type a message..."
             className="flex-1 px-4 py-3 border border-outline-variant rounded-xl focus:outline-none focus:ring-2 focus:ring-primary"
             onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
@@ -231,7 +258,7 @@ export default function ConversationPage({ params }: { params: { conversationId:
               sending || !message.trim() ? 'opacity-60 cursor-not-allowed' : ''
             }`}
           >
-            Send
+            {sending ? 'Sending...' : 'Send'}
           </button>
         </div>
       </div>

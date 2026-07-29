@@ -8,6 +8,8 @@ import type { User } from '@supabase/supabase-js'
 interface Conversation {
   other_user_id: string
   other_user_username: string
+  other_user_first_name: string
+  other_user_surname: string
   other_user_avatar?: string
   last_message: string
   last_message_time: string
@@ -43,6 +45,7 @@ export default function MessagesPage() {
       .select('id, sender_id, receiver_id, content, created_at, read, property_id, properties:property_id(property_type)')
       .or(`sender_id.eq.${userId},receiver_id.eq.${userId}`)
       .order('created_at', { ascending: false })
+      .limit(100)
 
     if (error) {
       console.error('Error fetching messages:', error)
@@ -50,18 +53,36 @@ export default function MessagesPage() {
       return
     }
 
+    // Collect unique user IDs to batch query
+    const otherUserIds = new Set<string>()
+    for (const msg of messages || []) {
+      otherUserIds.add(msg.sender_id === userId ? msg.receiver_id : msg.sender_id)
+    }
+
+    // Batch fetch all profiles in one query
+    const profileMap = new Map<string, { username: string; first_name: string; surname: string; avatar_url?: string }>()
+    if (otherUserIds.size > 0) {
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('user_id, username, first_name, surname, avatar_url')
+        .in('user_id', Array.from(otherUserIds))
+
+      for (const p of profiles || []) {
+        profileMap.set(p.user_id, p)
+      }
+    }
+
+    // Build conversations
     const conversationMap = new Map<string, Conversation>()
     for (const msg of messages || []) {
       const otherUserId = msg.sender_id === userId ? msg.receiver_id : msg.sender_id
       if (!conversationMap.has(otherUserId)) {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('username, first_name, surname, avatar_url')
-          .eq('user_id', otherUserId)
-          .single()
+        const profile = profileMap.get(otherUserId)
         conversationMap.set(otherUserId, {
           other_user_id: otherUserId,
-          other_user_username: profile?.username || `${profile?.first_name || ''} ${profile?.surname || ''}`.trim() || 'Unknown User',
+          other_user_username: profile?.username || '',
+          other_user_first_name: profile?.first_name || '',
+          other_user_surname: profile?.surname || '',
           other_user_avatar: profile?.avatar_url,
           last_message: msg.content,
           last_message_time: msg.created_at,
@@ -80,6 +101,10 @@ export default function MessagesPage() {
 
     setConversations(Array.from(conversationMap.values()))
     setLoading(false)
+  }
+
+  const getDisplayName = (conv: Conversation) => {
+    return conv.other_user_username || `${conv.other_user_first_name} ${conv.other_user_surname}`.trim() || 'Unknown User'
   }
 
   if (loading) {
@@ -123,7 +148,7 @@ export default function MessagesPage() {
                   </div>
                   <div className="flex-1">
                     <div className="flex justify-between items-start">
-                      <h3 className="font-semibold text-on-surface">{conv.other_user_username}</h3>
+                      <h3 className="font-semibold text-on-surface">{getDisplayName(conv)}</h3>
                       {conv.unread_count > 0 && (
                         <span className="px-2 py-1 bg-primary text-white rounded-full text-xs font-bold">
                           {conv.unread_count}
