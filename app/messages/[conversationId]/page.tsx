@@ -49,6 +49,7 @@ export default function ConversationPage({ params }: { params: { conversationId:
       }
       setUser(user)
 
+      // Get other user's profile
       const { data: profile } = await supabase
         .from('profiles')
         .select('username, first_name, surname, avatar_url')
@@ -59,10 +60,12 @@ export default function ConversationPage({ params }: { params: { conversationId:
         setOtherUser(profile)
       }
 
+      // Get property ID from query params if exists
       const urlParams = new URLSearchParams(window.location.search)
       const propId = urlParams.get('property')
       if (propId) {
         setPropertyId(propId)
+        // Fetch property info
         const { data: prop } = await supabase
           .from('properties')
           .select('property_type, property_details')
@@ -73,8 +76,10 @@ export default function ConversationPage({ params }: { params: { conversationId:
         }
       }
 
+      // Fetch messages
       await fetchMessages(user.id, conversationId)
 
+      // Mark messages as read
       await supabase
         .from('messages')
         .update({ read: true })
@@ -88,6 +93,7 @@ export default function ConversationPage({ params }: { params: { conversationId:
     checkUser()
   }, [conversationId, router])
 
+  // Setup realtime subscription after user is loaded
   useEffect(() => {
     if (!user) return
 
@@ -157,6 +163,7 @@ export default function ConversationPage({ params }: { params: { conversationId:
   return (
     <main className="flex-1 flex flex-col px-4 py-16">
       <div className="max-w-4xl mx-auto w-full flex flex-col h-[calc(100vh-128px)]">
+        {/* Header */}
         <div className="mb-4 p-4 bg-surface-bright rounded-2xl shadow-sm border border-outline-variant/30 flex items-center gap-3">
           <div className="w-10 h-10 rounded-full overflow-hidden bg-surface-container border border-outline-variant/30">
             {otherUser?.avatar_url ? (
@@ -181,6 +188,7 @@ export default function ConversationPage({ params }: { params: { conversationId:
           </div>
         </div>
 
+        {/* Messages */}
         <div className="flex-1 overflow-y-auto mb-4 space-y-3">
           {messages.map((msg) => (
             <div
@@ -206,6 +214,7 @@ export default function ConversationPage({ params }: { params: { conversationId:
           <div ref={messagesEndRef} />
         </div>
 
+        {/* Message Input */}
         <div className="flex gap-2">
           <input
             type="text"

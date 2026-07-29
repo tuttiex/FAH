@@ -42,24 +42,24 @@ export default function ListPage() {
       const { data: { user } } = await supabase.auth.getUser()
       setUser(user)
       
-    if (user) {
-      // Check if profile is complete (proof_of_identity is now optional)
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('first_name, surname, email')
-        .eq('user_id', user.id)
-        .single()
-      
-      const isProfileComplete = profile && 
-        profile.first_name && 
-        profile.surname && 
-        profile.email
-      
-      if (!isProfileComplete) {
-        router.push('/profile')
-        return
+      if (user) {
+        // Check if profile is complete
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('first_name, surname, email')
+          .eq('user_id', user.id)
+          .single()
+        
+        const isProfileComplete = profile && 
+          profile.first_name && 
+          profile.surname && 
+          profile.email
+        
+        if (!isProfileComplete) {
+          router.push('/profile')
+          return
+        }
       }
-    }
       
       fetchProperties()
       setLoading(false)
