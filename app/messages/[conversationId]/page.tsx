@@ -138,7 +138,7 @@ export default function ConversationPage({ params }: { params: { conversationId:
   }
 
   const handleSendMessage = async () => {
-    if (!user || !message.trim() || !otherUser) return
+    if (!user || !message.trim()) return
 
     setSending(true)
     setSendError('')
@@ -249,7 +249,7 @@ export default function ConversationPage({ params }: { params: { conversationId:
             }}
             placeholder="Type a message..."
             className="flex-1 px-4 py-3 border border-outline-variant rounded-xl focus:outline-none focus:ring-2 focus:ring-primary"
-            onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+            onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
           />
           <button
             onClick={handleSendMessage}
