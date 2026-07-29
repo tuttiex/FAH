@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, use } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '../../../lib/supabase'
 import type { User } from '@supabase/supabase-js'
@@ -14,7 +14,8 @@ interface Message {
   read: boolean
 }
 
-export default function ConversationPage({ params }: { params: { conversationId: string } }) {
+export default function ConversationPage({ params }: { params: Promise<{ conversationId: string }> }) {
+  const { conversationId: otherUserId } = use(params)
   const [user, setUser] = useState<User | null>(null)
   const [otherUserName, setOtherUserName] = useState('')
   const [messages, setMessages] = useState<Message[]>([])
@@ -23,8 +24,6 @@ export default function ConversationPage({ params }: { params: { conversationId:
   const [inputText, setInputText] = useState('')
   const router = useRouter()
   const messagesEndRef = useRef<HTMLDivElement>(null)
-
-  const otherUserId = params.conversationId
 
   useEffect(() => {
     let cancelled = false
