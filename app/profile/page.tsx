@@ -234,7 +234,6 @@ export default function ProfilePage() {
             onClick={() => {
               setEditing(!editing)
               if (editing) {
-                // Reset form on cancel
                 setFormData({
                   first_name: profile?.first_name || '',
                   surname: profile?.surname || '',
@@ -311,8 +310,8 @@ export default function ProfilePage() {
                   type="text"
                   name="username"
                   value={formData.username}
-                  readOnly
-                  className="w-full px-4 py-3 border border-outline-variant rounded-xl bg-surface-container cursor-not-allowed"
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-3 border border-outline-variant rounded-xl focus:outline-none focus:ring-2 focus:ring-primary"
                 />
               </div>
               <div className="space-y-2">
