@@ -102,20 +102,25 @@ export default function ConversationPage({ params }: { params: { conversationId:
     const text = inputText.trim()
     if (!user || !text) return
 
+    console.log('Sending message:', { sender_id: user.id, receiver_id: otherUserId, content: text })
+
     setSending(true)
 
-    const { error } = await supabase.from('messages').insert({
+    const { data, error } = await supabase.from('messages').insert({
       sender_id: user.id,
       receiver_id: otherUserId,
       content: text,
-    })
+    }).select()
 
     setSending(false)
 
     if (error) {
       console.error('Send error:', error)
+      alert('Send failed: ' + error.message)
       return
     }
+
+    console.log('Send success:', data)
 
     // Add sent message to local state immediately
     const newMsg: Message = {
