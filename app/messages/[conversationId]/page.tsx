@@ -91,17 +91,21 @@ export default function ConversationPage({ params }: { params: { conversationId:
     }
 
     checkUser()
+  }, [conversationId, router])
 
-    // Setup realtime subscription
+  // Setup realtime subscription after user is loaded
+  useEffect(() => {
+    if (!user) return
+
     const channel = supabase
-      .channel(`messages:${user?.id}:${conversationId}`)
+      .channel(`messages:${user.id}:${conversationId}`)
       .on(
         'postgres_changes',
         {
           event: 'INSERT',
           schema: 'public',
           table: 'messages',
-          filter: `sender_id=eq.${conversationId},receiver_id=eq.${user?.id}`,
+          filter: `sender_id=eq.${conversationId},receiver_id=eq.${user.id}`,
         },
         (payload) => {
           setMessages((prev) => [...prev, payload.new as Message])
@@ -112,7 +116,7 @@ export default function ConversationPage({ params }: { params: { conversationId:
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [conversationId, router])
+  }, [user, conversationId])
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
