@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '../../lib/supabase'
 import type { User } from '@supabase/supabase-js'
 
@@ -18,11 +18,14 @@ interface Property {
   created_at: string
 }
 
-export default function ListPage() {
+function ListPageContent() {
   const [user, setUser] = useState<User | null>(null)
   const [properties, setProperties] = useState<Property[]>([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
+  const [editingPropertyId, setEditingPropertyId] = useState<string | null>(null)
+  const [existingImages, setExistingImages] = useState<string[]>([])
+  const [imagesToDelete, setImagesToDelete] = useState<string[]>([])
   const [formData, setFormData] = useState({
     property_type: '',
     property_details: '',
@@ -36,6 +39,7 @@ export default function ListPage() {
   const [uploading, setUploading] = useState(false)
   const [submitMessage, setSubmitMessage] = useState('')
   const router = useRouter()
+  const searchParams = useSearchParams()
 
   useEffect(() => {
     const checkUserAndProfile = async () => {
@@ -61,12 +65,42 @@ export default function ListPage() {
         }
       }
       
+      // Check for edit query param
+      const editId = searchParams.get('edit')
+      if (editId) {
+        await loadPropertyForEdit(editId)
+      }
+      
       fetchProperties()
       setLoading(false)
     }
     
     checkUserAndProfile()
-  }, [router])
+  }, [router, searchParams])
+
+  const loadPropertyForEdit = async (propertyId: string) => {
+    const { data } = await supabase
+      .from('properties')
+      .select('*')
+      .eq('id', propertyId)
+      .single()
+
+    if (data) {
+      setEditingPropertyId(data.id)
+      setFormData({
+        property_type: data.property_type,
+        property_details: data.property_details,
+        description: data.description,
+        price: data.price.toString(),
+        address: data.address,
+        toilets: data.toilets.toString(),
+        units_available: data.units_available.toString(),
+      })
+      setExistingImages(data.image_urls || [])
+      setImagesToDelete([])
+      setShowForm(true)
+    }
+  }
 
   const fetchProperties = async () => {
     const { data, error } = await supabase.from('properties').select('*').order('created_at', { ascending: false })
@@ -95,6 +129,15 @@ export default function ListPage() {
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || [])
     setSelectedImages(prev => [...prev, ...files])
+  }
+
+  const handleRemoveExistingImage = (url: string) => {
+    setExistingImages(prev => prev.filter(img => img !== url))
+    setImagesToDelete(prev => [...prev, url])
+  }
+
+  const handleRemoveNewImage = (index: number) => {
+    setSelectedImages(prev => prev.filter((_, i) => i !== index))
   }
 
   const uploadImages = async (): Promise<string[]> => {
@@ -127,26 +170,66 @@ export default function ListPage() {
     e.preventDefault()
     if (!user) return
 
-    const imageUrls = await uploadImages()
+    const newImageUrls = await uploadImages()
+    const finalImageUrls = [...existingImages, ...newImageUrls]
 
-    const { error } = await supabase.from('properties').insert({
-      ...formData,
-      price: parseInt(formData.price),
-      toilets: parseInt(formData.toilets),
-      units_available: parseInt(formData.units_available),
-      user_id: user.id,
-      image_urls: imageUrls,
-    })
+    if (editingPropertyId) {
+      // Update existing property
+      const { error } = await supabase
+        .from('properties')
+        .update({
+          property_type: formData.property_type,
+          property_details: formData.property_details,
+          description: formData.description,
+          price: parseInt(formData.price),
+          address: formData.address,
+          toilets: parseInt(formData.toilets),
+          units_available: parseInt(formData.units_available),
+          image_urls: finalImageUrls,
+        })
+        .eq('id', editingPropertyId)
 
-    if (error) {
-      setSubmitMessage('Error listing property. Please try again.')
+      if (error) {
+        setSubmitMessage('Error updating property. Please try again.')
+      } else {
+        setSubmitMessage('Property updated successfully!')
+        resetForm()
+        fetchProperties()
+      }
     } else {
-      setSubmitMessage('Property listed successfully!')
-      setFormData({ property_type: '', property_details: '', description: '', price: '', address: '', toilets: '', units_available: '' })
-      setSelectedImages([])
-      setShowForm(false)
-      fetchProperties()
+      // Insert new property
+      const { error } = await supabase.from('properties').insert({
+        ...formData,
+        price: parseInt(formData.price),
+        toilets: parseInt(formData.toilets),
+        units_available: parseInt(formData.units_available),
+        user_id: user.id,
+        image_urls: newImageUrls,
+      })
+
+      if (error) {
+        setSubmitMessage('Error listing property. Please try again.')
+      } else {
+        setSubmitMessage('Property listed successfully!')
+        resetForm()
+        fetchProperties()
+      }
     }
+  }
+
+  const resetForm = () => {
+    setFormData({ property_type: '', property_details: '', description: '', price: '', address: '', toilets: '', units_available: '' })
+    setSelectedImages([])
+    setExistingImages([])
+    setImagesToDelete([])
+    setEditingPropertyId(null)
+    setShowForm(false)
+    // Remove edit param from URL
+    router.push('/list')
+  }
+
+  const handleCancel = () => {
+    resetForm()
   }
 
   if (loading) {
@@ -162,10 +245,14 @@ export default function ListPage() {
       <div className="max-w-4xl mx-auto">
         <div className="mb-8 flex flex-col md:flex-row justify-between items-end gap-4">
           <div className="space-y-2">
-            <h1 className="font-display font-bold text-3xl text-on-surface">List Your Property</h1>
-            <p className="text-on-surface-variant">Add your property to reach potential tenants.</p>
+            <h1 className="font-display font-bold text-3xl text-on-surface">
+              {editingPropertyId ? 'Edit Property' : 'List Your Property'}
+            </h1>
+            <p className="text-on-surface-variant">
+              {editingPropertyId ? 'Update your property details.' : 'Add your property to reach potential tenants.'}
+            </p>
           </div>
-          {user && (
+          {user && !editingPropertyId && (
             <button
               onClick={() => setShowForm(!showForm)}
               className="px-6 py-3 bg-primary-container text-white rounded-xl font-semibold transition-all duration-150 active:scale-[0.98]"
@@ -283,7 +370,9 @@ export default function ListPage() {
                   </div>
                   
                   <div className="space-y-2">
-                    <label className="text-sm font-semibold text-on-surface">Upload Property Images</label>
+                    <label className="text-sm font-semibold text-on-surface">
+                      {editingPropertyId ? 'Add More Images' : 'Upload Property Images'}
+                    </label>
                     <input
                       type="file"
                       accept="image/*"
@@ -291,20 +380,76 @@ export default function ListPage() {
                       onChange={handleImageSelect}
                       className="w-full px-4 py-3 border border-outline-variant rounded-xl focus:outline-none focus:ring-2 focus:ring-primary"
                     />
+                    
+                    {/* Existing images (edit mode) */}
+                    {editingPropertyId && existingImages.length > 0 && (
+                      <div className="mt-3">
+                        <p className="text-sm font-semibold text-on-surface mb-2">Current Images:</p>
+                        <div className="flex flex-wrap gap-3">
+                          {existingImages.map((url, index) => (
+                            <div key={index} className="relative group">
+                              <img src={url} alt={`Existing ${index + 1}`} className="w-24 h-24 object-cover rounded-lg border border-outline-variant/30" />
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveExistingImage(url)}
+                                className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                              >
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                                  <path d="M18 6L6 18M6 6L18 18" strokeLinecap="round"/>
+                                </svg>
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Newly selected images */}
                     {selectedImages.length > 0 && (
-                      <p className="text-xs text-on-surface-variant">{selectedImages.length} image(s) selected</p>
+                      <div className="mt-3">
+                        <p className="text-sm font-semibold text-on-surface mb-2">New Images:</p>
+                        <div className="flex flex-wrap gap-3">
+                          {selectedImages.map((file, index) => (
+                            <div key={index} className="relative group">
+                              <img 
+                                src={URL.createObjectURL(file)} 
+                                alt={`New ${index + 1}`} 
+                                className="w-24 h-24 object-cover rounded-lg border border-outline-variant/30" 
+                              />
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveNewImage(index)}
+                                className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                              >
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                                  <path d="M18 6L6 18M6 6L18 18" strokeLinecap="round"/>
+                                </svg>
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
                     )}
                   </div>
                   
-                  <button
-                    type="submit"
-                    disabled={uploading}
-                    className={`w-full py-3 px-6 bg-primary text-white rounded-xl font-semibold transition-all duration-150 active:scale-[0.98] ${
-                      uploading ? 'opacity-60 cursor-not-allowed' : ''
-                    }`}
-                  >
-                    {uploading ? 'Uploading...' : 'List Property'}
-                  </button>
+                  <div className="flex gap-3">
+                    <button
+                      type="button"
+                      onClick={handleCancel}
+                      className="flex-1 py-3 px-6 border border-outline-variant text-on-surface rounded-xl font-semibold transition-all duration-150 active:scale-[0.98]"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={uploading}
+                      className={`flex-1 py-3 px-6 bg-primary text-white rounded-xl font-semibold transition-all duration-150 active:scale-[0.98] ${
+                        uploading ? 'opacity-60 cursor-not-allowed' : ''
+                      }`}
+                    >
+                      {uploading ? 'Uploading...' : editingPropertyId ? 'Update Property' : 'List Property'}
+                    </button>
+                  </div>
                 </div>
                 
                 {submitMessage && <p className="mt-4 text-sm text-center text-on-surface-variant">{submitMessage}</p>}
@@ -343,5 +488,17 @@ export default function ListPage() {
         )}
       </div>
     </main>
+  )
+}
+
+export default function ListPage() {
+  return (
+    <Suspense fallback={
+      <main className="flex-1 flex items-center justify-center">
+        <p className="text-on-surface-variant">Loading...</p>
+      </main>
+    }>
+      <ListPageContent />
+    </Suspense>
   )
 }
