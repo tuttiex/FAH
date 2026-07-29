@@ -165,9 +165,10 @@ export default function ConversationPage({ params }: { params: { conversationId:
 
     setSending(false)
     if (error) {
+      console.error('Send message error:', error)
       // Remove the optimistic message on failure
       setMessages((prev) => prev.filter((m) => m.id !== tempId))
-      setSendError('Failed to send message. Please try again.')
+      setSendError(`Failed to send message: ${error.message}`)
     }
   }
 
