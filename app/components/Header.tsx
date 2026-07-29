@@ -9,6 +9,7 @@ export default function Header() {
   const [user, setUser] = useState<User | null>(null)
   const [unreadCount, setUnreadCount] = useState(0)
   const dropdownRef = useRef<HTMLDivElement>(null)
+  const mobileMenuRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const checkUser = async () => {
@@ -37,7 +38,10 @@ export default function Header() {
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      const target = event.target as Node
+      const isOutsideDesktop = dropdownRef.current && !dropdownRef.current.contains(target)
+      const isOutsideMobile = mobileMenuRef.current && !mobileMenuRef.current.contains(target)
+      if (isOutsideDesktop && isOutsideMobile) {
         setDropdownOpen(false)
       }
     }
@@ -125,46 +129,48 @@ export default function Header() {
         </div>
       </nav>
 
-      {/* Mobile Menu Button */}
-      <button
-        className="md:hidden text-on-surface p-2"
-        onClick={() => setDropdownOpen(!dropdownOpen)}
-        aria-label="Menu"
-      >
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M3 12H21M3 6H21M3 18H21" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-        </svg>
-      </button>
+      {/* Mobile Menu */}
+      <div className="md:hidden" ref={mobileMenuRef}>
+        <button
+          className="text-on-surface p-2"
+          onClick={() => setDropdownOpen(!dropdownOpen)}
+          aria-label="Menu"
+        >
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M3 12H21M3 6H21M3 18H21" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+          </svg>
+        </button>
 
-      {/* Mobile Dropdown */}
-      {dropdownOpen && (
-        <div className="absolute top-full right-0 mt-2 w-48 bg-white border border-outline-variant rounded-lg shadow-lg z-10 md:hidden">
-          {user ? (
-            <>
-              <a href="/profile" className="block px-4 py-2 text-on-surface hover:bg-green-tint transition-colors">Profile</a>
-              <a href="/messages" className="block px-4 py-2 text-on-surface hover:bg-green-tint transition-colors relative">
-                Messages
-                {unreadCount > 0 && (
-                  <span className="absolute top-1 right-2 px-1.5 py-0.5 bg-primary text-white rounded-full text-xs font-bold">
-                    {unreadCount}
-                  </span>
-                )}
-              </a>
-              <button
-                onClick={handleLogout}
-                className="block w-full px-4 py-2 text-left text-on-surface hover:bg-green-tint transition-colors"
-              >
-                Logout
-              </button>
-            </>
-          ) : (
-            <>
-              <a href="/login" className="block px-4 py-2 text-on-surface hover:bg-green-tint transition-colors">Login</a>
-              <a href="/signup" className="block px-4 py-2 text-on-surface hover:bg-green-tint transition-colors">Sign Up</a>
-            </>
-          )}
-        </div>
-      )}
+        {/* Mobile Dropdown */}
+        {dropdownOpen && (
+          <div className="absolute top-full right-0 mt-2 w-48 bg-white border border-outline-variant rounded-lg shadow-lg z-10">
+            {user ? (
+              <>
+                <a href="/profile" className="block px-4 py-2 text-on-surface hover:bg-green-tint transition-colors">Profile</a>
+                <a href="/messages" className="block px-4 py-2 text-on-surface hover:bg-green-tint transition-colors relative">
+                  Messages
+                  {unreadCount > 0 && (
+                    <span className="absolute top-1 right-2 px-1.5 py-0.5 bg-primary text-white rounded-full text-xs font-bold">
+                      {unreadCount}
+                    </span>
+                  )}
+                </a>
+                <button
+                  onClick={handleLogout}
+                  className="block w-full px-4 py-2 text-left text-on-surface hover:bg-green-tint transition-colors"
+                >
+                  Logout
+                </button>
+              </>
+            ) : (
+              <>
+                <a href="/login" className="block px-4 py-2 text-on-surface hover:bg-green-tint transition-colors">Login</a>
+                <a href="/signup" className="block px-4 py-2 text-on-surface hover:bg-green-tint transition-colors">Sign Up</a>
+              </>
+            )}
+          </div>
+        )}
+      </div>
     </header>
   )
 }
