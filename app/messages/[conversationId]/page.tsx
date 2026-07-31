@@ -147,15 +147,15 @@ function ConversationContent({ params }: { params: Promise<{ conversationId: str
   }
 
   return (
-    <main className="flex-1 flex flex-col px-4 pt-16">
-      <div className="max-w-4xl mx-auto w-full flex flex-col flex-1">
+    <main className="flex-1 flex flex-col px-4 pt-16 overflow-hidden">
+      <div className="max-w-4xl mx-auto w-full flex flex-col flex-1 min-h-0">
         {/* Header */}
         <div className="mb-4 p-4 bg-surface-bright rounded-2xl shadow-sm border border-outline-variant/30">
           <h2 className="font-semibold text-on-surface">{otherUserName || 'User'}</h2>
         </div>
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto mb-4 space-y-3">
+        <div className="flex-1 overflow-y-auto mb-4 space-y-3 min-h-0">
           {messages.map((msg) => (
             <div
               key={msg.id}
