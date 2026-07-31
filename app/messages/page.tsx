@@ -59,13 +59,11 @@ export default function MessagesPage() {
       otherUserIds.add(msg.sender_id === userId ? msg.receiver_id : msg.sender_id)
     }
 
-    // Batch fetch all profiles in one query
+    // Batch fetch all profiles via RPC (bypasses RLS)
     const profileMap = new Map<string, { username: string; first_name: string; surname: string; avatar_url?: string }>()
     if (otherUserIds.size > 0) {
       const { data: profiles } = await supabase
-        .from('profiles')
-        .select('user_id, username, first_name, surname, avatar_url')
-        .in('user_id', Array.from(otherUserIds))
+        .rpc('get_user_profiles', { target_user_ids: Array.from(otherUserIds) })
 
       for (const p of profiles || []) {
         profileMap.set(p.user_id, p)

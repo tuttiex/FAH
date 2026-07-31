@@ -37,12 +37,10 @@ function ConversationContent({ params }: { params: Promise<{ conversationId: str
 
       setUser(user)
 
-      // Fetch other user's name
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('username, first_name, surname')
-        .eq('user_id', otherUserId)
-        .maybeSingle()
+      // Fetch other user's name via RPC (bypasses RLS)
+      const { data: profileData } = await supabase
+        .rpc('get_user_profile', { target_user_id: otherUserId })
+      const profile = profileData?.[0] ?? null
 
       if (!cancelled && profile) {
         setOtherUserName(profile.username || `${profile.first_name} ${profile.surname}`.trim())
