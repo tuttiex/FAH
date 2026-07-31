@@ -91,10 +91,8 @@ export default function MessagesPage() {
           property_type: (msg.properties as any)?.property_type,
         })
       }
-      const conv = conversationMap.get(otherUserId)!
-      conv.last_message = msg.content
-      conv.last_message_time = msg.created_at
       if (!msg.read && msg.receiver_id === userId) {
+        const conv = conversationMap.get(otherUserId)!
         conv.unread_count += 1
       }
     }

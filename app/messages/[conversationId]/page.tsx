@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect, useRef, use } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect, useRef, use, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '../../../lib/supabase'
 import type { User } from '@supabase/supabase-js'
 
@@ -14,8 +14,10 @@ interface Message {
   read: boolean
 }
 
-export default function ConversationPage({ params }: { params: Promise<{ conversationId: string }> }) {
+function ConversationContent({ params }: { params: Promise<{ conversationId: string }> }) {
   const { conversationId: otherUserId } = use(params)
+  const searchParams = useSearchParams()
+  const propertyId = searchParams.get('property')
   const [user, setUser] = useState<User | null>(null)
   const [otherUserName, setOtherUserName] = useState('')
   const [messages, setMessages] = useState<Message[]>([])
@@ -105,11 +107,15 @@ export default function ConversationPage({ params }: { params: Promise<{ convers
 
     setSending(true)
 
-    const { data, error } = await supabase.from('messages').insert({
+    const insertPayload: Record<string, any> = {
       sender_id: user.id,
       receiver_id: otherUserId,
       content: text,
-    }).select()
+    }
+    if (propertyId) {
+      insertPayload.property_id = propertyId
+    }
+    const { data, error } = await supabase.from('messages').insert(insertPayload).select()
 
     setSending(false)
 
@@ -196,5 +202,17 @@ export default function ConversationPage({ params }: { params: Promise<{ convers
         </div>
       </div>
     </main>
+  )
+}
+
+export default function ConversationPage({ params }: { params: Promise<{ conversationId: string }> }) {
+  return (
+    <Suspense fallback={
+      <main className="flex-1 flex items-center justify-center">
+        <p className="text-on-surface-variant">Loading conversation...</p>
+      </main>
+    }>
+      <ConversationContent params={params} />
+    </Suspense>
   )
 }
