@@ -26,3 +26,18 @@ BEGIN
   WHERE p.user_id = ANY(target_user_ids);
 END;
 $$;
+
+-- Create a function to fetch a single property by ID (bypasses RLS via SECURITY DEFINER)
+-- Only exposes specific fields: property_type, property_details, price, address, image_urls
+CREATE OR REPLACE FUNCTION get_property(target_property_id UUID)
+RETURNS TABLE (property_type TEXT, property_details TEXT, price BIGINT, address TEXT, image_urls TEXT[])
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+BEGIN
+  RETURN QUERY
+  SELECT p.property_type, p.property_details, p.price, p.address, p.image_urls
+  FROM public.properties p
+  WHERE p.id = target_property_id;
+END;
+$$;

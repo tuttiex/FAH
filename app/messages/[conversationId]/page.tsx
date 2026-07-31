@@ -24,6 +24,7 @@ function ConversationContent({ params }: { params: Promise<{ conversationId: str
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
   const [inputText, setInputText] = useState('')
+  const [propertyDetails, setPropertyDetails] = useState<{ property_type: string; property_details: string; price: number; address: string; image_urls?: string[] } | null>(null)
   const router = useRouter()
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
@@ -44,6 +45,32 @@ function ConversationContent({ params }: { params: Promise<{ conversationId: str
 
       if (!cancelled && profile) {
         setOtherUserName(profile.username || `${profile.first_name} ${profile.surname}`.trim())
+      }
+
+      // Determine property ID: from URL or fallback to most recent message's property_id
+      let resolvedPropertyId = propertyId
+      if (!resolvedPropertyId) {
+        const { data: recentMsg } = await supabase
+          .from('messages')
+          .select('property_id')
+          .or(`and(sender_id.eq.${user.id},receiver_id.eq.${otherUserId}),and(sender_id.eq.${otherUserId},receiver_id.eq.${user.id})`)
+          .not('property_id', 'is', null)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle()
+        if (recentMsg?.property_id) {
+          resolvedPropertyId = recentMsg.property_id
+        }
+      }
+
+      // Fetch property details if we have a property ID
+      if (resolvedPropertyId) {
+        const { data: propData } = await supabase
+          .rpc('get_property', { target_property_id: resolvedPropertyId })
+        const prop = propData?.[0] ?? null
+        if (!cancelled && prop) {
+          setPropertyDetails(prop)
+        }
       }
 
       // Fetch messages
@@ -150,7 +177,25 @@ function ConversationContent({ params }: { params: Promise<{ conversationId: str
     <main className="fixed inset-x-0 bottom-0 top-20 flex flex-col px-4 pt-16">
       <div className="max-w-4xl mx-auto w-full flex flex-col flex-1 min-h-0">
         {/* Header */}
-        <div className="mb-4 p-4 bg-surface-bright rounded-2xl shadow-sm border border-outline-variant/30">
+        <div className="mb-4 p-4 bg-surface-bright rounded-2xl shadow-sm border border-outline-variant/30 space-y-2">
+          {propertyDetails && (
+            <div className="flex items-center gap-3 pb-2 border-b border-outline-variant/20">
+              {propertyDetails.image_urls?.[0] && (
+                <img
+                  src={propertyDetails.image_urls[0]}
+                  alt={propertyDetails.property_type}
+                  className="w-14 h-14 rounded-lg object-cover border border-outline-variant/20 flex-shrink-0"
+                />
+              )}
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-on-surface truncate">
+                  {propertyDetails.property_type} - {propertyDetails.property_details}
+                </p>
+                <p className="text-xs text-on-surface-variant truncate">{propertyDetails.address}</p>
+                <p className="text-xs font-bold text-primary">₦{propertyDetails.price.toLocaleString()}</p>
+              </div>
+            </div>
+          )}
           <h2 className="font-semibold text-on-surface">{otherUserName || 'User'}</h2>
         </div>
 
