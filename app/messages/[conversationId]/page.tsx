@@ -148,7 +148,7 @@ function ConversationContent({ params }: { params: Promise<{ conversationId: str
 
   return (
     <main className="flex-1 flex flex-col px-4 py-16">
-      <div className="max-w-4xl mx-auto w-full flex flex-col h-[calc(100vh-128px)]">
+      <div className="max-w-4xl mx-auto w-full flex flex-col flex-1">
         {/* Header */}
         <div className="mb-4 p-4 bg-surface-bright rounded-2xl shadow-sm border border-outline-variant/30">
           <h2 className="font-semibold text-on-surface">{otherUserName || 'User'}</h2>
