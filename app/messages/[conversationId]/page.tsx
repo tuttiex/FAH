@@ -67,9 +67,6 @@ function ConversationContent({ params }: { params: Promise<{ conversationId: str
         }
       }
 
-      console.log('Property ID from URL:', propertyId)
-      console.log('Resolved property ID:', resolvedPropId)
-
       if (!cancelled) {
         setResolvedPropertyId(resolvedPropId)
       }
@@ -81,7 +78,6 @@ function ConversationContent({ params }: { params: Promise<{ conversationId: str
         if (propError) {
           console.error('Error fetching property details:', propError)
         }
-        console.log('Property RPC result:', propData)
         const prop = propData?.[0] ?? null
         if (!cancelled && prop) {
           setPropertyDetails(prop)
