@@ -25,6 +25,7 @@ function ConversationContent({ params }: { params: Promise<{ conversationId: str
   const [sending, setSending] = useState(false)
   const [inputText, setInputText] = useState('')
   const [propertyDetails, setPropertyDetails] = useState<{ property_type: string; property_details: string; price: number; address: string; image_urls?: string[] } | null>(null)
+  const [resolvedPropertyId, setResolvedPropertyId] = useState<string | null>(null)
   const router = useRouter()
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
@@ -48,8 +49,8 @@ function ConversationContent({ params }: { params: Promise<{ conversationId: str
       }
 
       // Determine property ID: from URL or fallback to most recent message's property_id
-      let resolvedPropertyId = propertyId
-      if (!resolvedPropertyId) {
+      let resolvedPropId = propertyId
+      if (!resolvedPropId) {
         const { data: recentMsg } = await supabase
           .from('messages')
           .select('property_id')
@@ -59,14 +60,18 @@ function ConversationContent({ params }: { params: Promise<{ conversationId: str
           .limit(1)
           .maybeSingle()
         if (recentMsg?.property_id) {
-          resolvedPropertyId = recentMsg.property_id
+          resolvedPropId = recentMsg.property_id
         }
       }
 
+      if (!cancelled) {
+        setResolvedPropertyId(resolvedPropId)
+      }
+
       // Fetch property details if we have a property ID
-      if (resolvedPropertyId) {
+      if (resolvedPropId) {
         const { data: propData } = await supabase
-          .rpc('get_property', { target_property_id: resolvedPropertyId })
+          .rpc('get_property', { target_property_id: resolvedPropId })
         const prop = propData?.[0] ?? null
         if (!cancelled && prop) {
           setPropertyDetails(prop)
@@ -137,8 +142,8 @@ function ConversationContent({ params }: { params: Promise<{ conversationId: str
       receiver_id: otherUserId,
       content: text,
     }
-    if (propertyId) {
-      insertPayload.property_id = propertyId
+    if (resolvedPropertyId) {
+      insertPayload.property_id = resolvedPropertyId
     }
     const { data, error } = await supabase.from('messages').insert(insertPayload).select()
 
