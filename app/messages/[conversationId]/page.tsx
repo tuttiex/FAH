@@ -116,9 +116,15 @@ function ConversationContent({ params }: { params: Promise<{ conversationId: str
         event: 'INSERT',
         schema: 'public',
         table: 'messages',
-        filter: `sender_id=eq.${otherUserId},receiver_id=eq.${user.id}`,
+        filter: `or(and(sender_id=eq.${user.id},receiver_id=eq.${otherUserId}),and(sender_id=eq.${otherUserId},receiver_id=eq.${user.id}))`,
       }, (payload) => {
-        setMessages((prev) => [...prev, payload.new as Message])
+        setMessages((prev) => {
+          // Avoid duplicates if the message already exists (e.g., optimistic add)
+          if (prev.some((m) => m.id === (payload.new as Message).id)) {
+            return prev
+          }
+          return [...prev, payload.new as Message]
+        })
       })
       .subscribe()
 

@@ -56,6 +56,10 @@ export default function RentPage() {
       router.push('/login')
       return
     }
+    if (ownerId === user.id) {
+      alert('This is your own property listing.')
+      return
+    }
     router.push(`/messages/${ownerId}?property=${propertyId}`)
   }
 
