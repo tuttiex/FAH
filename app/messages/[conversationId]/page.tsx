@@ -51,7 +51,7 @@ function ConversationContent({ params }: { params: Promise<{ conversationId: str
       // Determine property ID: from URL or fallback to most recent message's property_id
       let resolvedPropId = propertyId
       if (!resolvedPropId) {
-        const { data: recentMsg } = await supabase
+        const { data: recentMsg, error: recentMsgError } = await supabase
           .from('messages')
           .select('property_id')
           .or(`and(sender_id.eq.${user.id},receiver_id.eq.${otherUserId}),and(sender_id.eq.${otherUserId},receiver_id.eq.${user.id})`)
@@ -59,6 +59,9 @@ function ConversationContent({ params }: { params: Promise<{ conversationId: str
           .order('created_at', { ascending: false })
           .limit(1)
           .maybeSingle()
+        if (recentMsgError) {
+          console.error('Error fetching recent message property_id:', recentMsgError)
+        }
         if (recentMsg?.property_id) {
           resolvedPropId = recentMsg.property_id
         }
@@ -70,8 +73,11 @@ function ConversationContent({ params }: { params: Promise<{ conversationId: str
 
       // Fetch property details if we have a property ID
       if (resolvedPropId) {
-        const { data: propData } = await supabase
+        const { data: propData, error: propError } = await supabase
           .rpc('get_property', { target_property_id: resolvedPropId })
+        if (propError) {
+          console.error('Error fetching property details:', propError)
+        }
         const prop = propData?.[0] ?? null
         if (!cancelled && prop) {
           setPropertyDetails(prop)
