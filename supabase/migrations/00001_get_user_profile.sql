@@ -29,8 +29,9 @@ $$;
 
 -- Create a function to fetch a single property by ID (bypasses RLS via SECURITY DEFINER)
 -- Only exposes specific fields: property_type, property_details, price, address, image_urls
+-- NOTE: price is INTEGER to match the properties table schema (not BIGINT)
 CREATE OR REPLACE FUNCTION get_property(target_property_id UUID)
-RETURNS TABLE (property_type TEXT, property_details TEXT, price BIGINT, address TEXT, image_urls TEXT[])
+RETURNS TABLE (property_type TEXT, property_details TEXT, price INTEGER, address TEXT, image_urls TEXT[])
 LANGUAGE plpgsql
 SECURITY DEFINER
 AS $$

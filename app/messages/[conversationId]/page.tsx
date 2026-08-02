@@ -116,22 +116,30 @@ function ConversationContent({ params }: { params: Promise<{ conversationId: str
   useEffect(() => {
     if (!user) return
 
+    const addMessage = (payload: any) => {
+      setMessages((prev) => {
+        // Avoid duplicates if the message already exists (e.g., optimistic add)
+        if (prev.some((m) => m.id === (payload.new as Message).id)) {
+          return prev
+        }
+        return [...prev, payload.new as Message]
+      })
+    }
+
     const channel = supabase
       .channel(`room-${user.id}-${otherUserId}`)
       .on('postgres_changes', {
         event: 'INSERT',
         schema: 'public',
         table: 'messages',
-        filter: `or(and(sender_id=eq.${user.id},receiver_id=eq.${otherUserId}),and(sender_id=eq.${otherUserId},receiver_id=eq.${user.id}))`,
-      }, (payload) => {
-        setMessages((prev) => {
-          // Avoid duplicates if the message already exists (e.g., optimistic add)
-          if (prev.some((m) => m.id === (payload.new as Message).id)) {
-            return prev
-          }
-          return [...prev, payload.new as Message]
-        })
-      })
+        filter: `sender_id=eq.${otherUserId},receiver_id=eq.${user.id}`, // incoming
+      }, addMessage)
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'messages',
+        filter: `sender_id=eq.${user.id},receiver_id=eq.${otherUserId}`, // outgoing from other device
+      }, addMessage)
       .subscribe()
 
     return () => { supabase.removeChannel(channel) }
