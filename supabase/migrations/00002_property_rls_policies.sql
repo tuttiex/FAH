@@ -1,3 +1,4 @@
+
 -- Enable Row Level Security on the properties table
 ALTER TABLE public.properties ENABLE ROW LEVEL SECURITY;
 
