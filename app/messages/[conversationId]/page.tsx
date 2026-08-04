@@ -179,8 +179,13 @@ function ConversationContent({ params }: { params: Promise<{ conversationId: str
 
     // Add sent message to local state immediately using the real returned row
     // (the insert uses .select(), so data[0] has the real id, created_at, etc.)
+    // Dedup-guard the same way addMessage does, in case the realtime "outgoing"
+    // event arrived over the websocket before this REST response resolved.
     if (data && data[0]) {
-      setMessages((prev) => [...prev, data[0] as Message])
+      const newMsg = data[0] as Message
+      setMessages((prev) =>
+        prev.some((m) => m.id === newMsg.id) ? prev : [...prev, newMsg]
+      )
     }
     setInputText('')
   }

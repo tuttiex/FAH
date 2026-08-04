@@ -69,17 +69,17 @@ function ListPageContent() {
       // Check for edit query param
       const editId = searchParams.get('edit')
       if (editId) {
-        await loadPropertyForEdit(editId)
+        await loadPropertyForEdit(editId, user)
       }
       
-      fetchProperties()
+      fetchProperties(user)
       setLoading(false)
     }
     
     checkUserAndProfile()
   }, [router, searchParams])
 
-  const loadPropertyForEdit = async (propertyId: string) => {
+  const loadPropertyForEdit = async (propertyId: string, currentUser: User | null) => {
     const { data } = await supabase
       .from('properties')
       .select('*')
@@ -88,7 +88,11 @@ function ListPageContent() {
 
     if (data) {
       // Defense-in-depth: only allow the owner to edit their own property
-      if (data.user_id !== user?.id) {
+      if (!currentUser) {
+        alert('You must be logged in to edit a property.')
+        return
+      }
+      if (data.user_id !== currentUser.id) {
         alert('You do not have permission to edit this property.')
         return
       }
@@ -108,12 +112,12 @@ function ListPageContent() {
     }
   }
 
-  const fetchProperties = async () => {
-    if (!user) return
+  const fetchProperties = async (currentUser: User | null) => {
+    if (!currentUser) return
     const { data, error } = await supabase
       .from('properties')
       .select('*')
-      .eq('user_id', user.id)
+      .eq('user_id', currentUser.id)
       .order('created_at', { ascending: false })
     if (data) {
       setProperties(data)
@@ -205,7 +209,7 @@ function ListPageContent() {
       } else {
         setSubmitMessage('Property updated successfully!')
         resetForm()
-        fetchProperties()
+        fetchProperties(user)
       }
     } else {
       // Insert new property
@@ -223,7 +227,7 @@ function ListPageContent() {
       } else {
         setSubmitMessage('Property listed successfully!')
         resetForm()
-        fetchProperties()
+        fetchProperties(user)
       }
     }
   }

@@ -7,12 +7,13 @@ CREATE POLICY "properties_select_all"
   FOR SELECT
   USING (true);
 
--- INSERT: allow authenticated users to insert properties
+-- INSERT: allow authenticated users to insert properties, but only as the owner
+-- (prevents a user from inserting a row claiming someone else's user_id)
 CREATE POLICY "properties_insert_authenticated"
   ON public.properties
   FOR INSERT
   TO authenticated
-  WITH CHECK (true);
+  WITH CHECK (user_id = auth.uid());
 
 -- UPDATE: only allow the owner to update their own properties
 CREATE POLICY "properties_update_owner"
