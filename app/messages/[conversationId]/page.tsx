@@ -177,16 +177,11 @@ function ConversationContent({ params }: { params: Promise<{ conversationId: str
 
     console.log('Send success:', data)
 
-    // Add sent message to local state immediately
-    const newMsg: Message = {
-      id: `local-${Date.now()}`,
-      sender_id: user.id,
-      receiver_id: otherUserId,
-      content: text,
-      created_at: new Date().toISOString(),
-      read: false,
+    // Add sent message to local state immediately using the real returned row
+    // (the insert uses .select(), so data[0] has the real id, created_at, etc.)
+    if (data && data[0]) {
+      setMessages((prev) => [...prev, data[0] as Message])
     }
-    setMessages((prev) => [...prev, newMsg])
     setInputText('')
   }
 

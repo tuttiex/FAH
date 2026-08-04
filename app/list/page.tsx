@@ -16,6 +16,7 @@ interface Property {
   units_available: number
   image_urls?: string[]
   created_at: string
+  user_id: string
 }
 
 function ListPageContent() {
@@ -86,6 +87,11 @@ function ListPageContent() {
       .single()
 
     if (data) {
+      // Defense-in-depth: only allow the owner to edit their own property
+      if (data.user_id !== user?.id) {
+        alert('You do not have permission to edit this property.')
+        return
+      }
       setEditingPropertyId(data.id)
       setFormData({
         property_type: data.property_type,
@@ -103,7 +109,12 @@ function ListPageContent() {
   }
 
   const fetchProperties = async () => {
-    const { data, error } = await supabase.from('properties').select('*').order('created_at', { ascending: false })
+    if (!user) return
+    const { data, error } = await supabase
+      .from('properties')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
     if (data) {
       setProperties(data)
     }

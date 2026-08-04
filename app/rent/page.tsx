@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '../../lib/supabase'
 import type { User } from '@supabase/supabase-js'
 
@@ -19,12 +19,20 @@ interface Property {
   user_id: string
 }
 
-export default function RentPage() {
+function RentPageContent() {
   const [properties, setProperties] = useState<Property[]>([])
   const [loading, setLoading] = useState(true)
-  const [searchTerm, setSearchTerm] = useState('')
   const [user, setUser] = useState<User | null>(null)
   const router = useRouter()
+  const searchParams = useSearchParams()
+
+  // Read homepage search query params (location, type, budget)
+  const locationParam = searchParams.get('location') || ''
+  const typeParam = searchParams.get('type') || ''
+  const budgetParam = searchParams.get('budget') || ''
+
+  // Pre-fill the search input from the homepage location query param
+  const [searchTerm, setSearchTerm] = useState(locationParam)
 
   useEffect(() => {
     const checkUser = async () => {
@@ -33,6 +41,8 @@ export default function RentPage() {
     }
     checkUser()
     fetchProperties()
+    // TODO: wire up Property Type (typeParam) and Budget (budgetParam) filtering
+    // to the existing search logic. For now, location drives the text search.
   }, [])
 
   const fetchProperties = async () => {
@@ -115,5 +125,17 @@ export default function RentPage() {
         )}
       </div>
     </main>
+  )
+}
+
+export default function RentPage() {
+  return (
+    <Suspense fallback={
+      <main className="flex-1 flex items-center justify-center">
+        <p className="text-on-surface-variant">Loading...</p>
+      </main>
+    }>
+      <RentPageContent />
+    </Suspense>
   )
 }

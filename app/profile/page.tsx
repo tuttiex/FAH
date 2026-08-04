@@ -185,9 +185,14 @@ export default function ProfilePage() {
   }
 
   const handleDeleteProperty = async (propertyId: string) => {
+    if (!user) return
     if (!confirm('Are you sure you want to delete this property?')) return
 
-    const { error } = await supabase.from('properties').delete().eq('id', propertyId)
+    const { error } = await supabase
+      .from('properties')
+      .delete()
+      .eq('id', propertyId)
+      .eq('user_id', user.id)
     if (!error) {
       setProperties(properties.filter(p => p.id !== propertyId))
     }

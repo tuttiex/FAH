@@ -8,7 +8,18 @@ import type { User } from '@supabase/supabase-js'
 export default function Home() {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
+  const [location, setLocation] = useState('')
+  const [propertyType, setPropertyType] = useState('')
+  const [budget, setBudget] = useState('')
   const router = useRouter()
+  const handleSearch = () => {
+    const params = new URLSearchParams()
+    if (location.trim()) params.set('location', location.trim())
+    if (propertyType) params.set('type', propertyType)
+    if (budget.trim()) params.set('budget', budget.trim())
+    const query = params.toString()
+    router.push(query ? `/rent?${query}` : '/rent')
+  }
 
   useEffect(() => {
     const checkUser = async () => {
@@ -112,6 +123,8 @@ export default function Home() {
             <input 
               type="text" 
               placeholder="Where are you looking?" 
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
               className="w-full bg-transparent border-none focus:ring-0 font-base text-base p-0 placeholder:text-on-surface-variant/40"
             />
           </div>
@@ -122,10 +135,15 @@ export default function Home() {
               </svg>
               PROPERTY TYPE
             </label>
-            <select className="w-full bg-transparent border-none focus:ring-0 font-base text-base p-0 appearance-none text-on-surface-variant">
-              <option>House</option>
-              <option>Shop</option>
-              <option>Land</option>
+            <select
+              value={propertyType}
+              onChange={(e) => setPropertyType(e.target.value)}
+              className="w-full bg-transparent border-none focus:ring-0 font-base text-base p-0 appearance-none text-on-surface-variant"
+            >
+              <option value="">All Types</option>
+              <option value="House">House</option>
+              <option value="Shop">Shop</option>
+              <option value="Land">Land</option>
             </select>
           </div>
           <div className="space-y-2 md:border-l md:border-outline-variant/30 md:pl-6">
@@ -138,11 +156,16 @@ export default function Home() {
                <input 
                type="text" 
                placeholder="₦100,000 - ₦2,000,000" 
+               value={budget}
+               onChange={(e) => setBudget(e.target.value)}
                className="w-full bg-transparent border-none focus:ring-0 font-base text-base p-0 placeholder:text-on-surface-variant/40"
              />
           </div>
           <div className="flex items-end">
-            <button className="w-full py-4 bg-primary text-white rounded-xl font-semibold text-base active:scale-[0.96] transition-transform flex items-center justify-center gap-2">
+            <button
+              onClick={handleSearch}
+              className="w-full py-4 bg-primary text-white rounded-xl font-semibold text-base active:scale-[0.96] transition-transform flex items-center justify-center gap-2"
+            >
               Search Properties
             </button>
           </div>
