@@ -12,23 +12,13 @@ export default function Header() {
   const mobileMenuRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    // Fetch unread count whenever the user changes
+    // Fetch unread count whenever the user changes.
+    // The AuthContext already subscribes to onAuthStateChange, so this
+    // effect re-runs on login/logout via the `user` dependency.
     if (user) {
       fetchUnreadCount(user.id)
     } else {
       setUnreadCount(0)
-    }
-
-    const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session?.user) {
-        fetchUnreadCount(session.user.id)
-      } else {
-        setUnreadCount(0)
-      }
-    })
-
-    return () => {
-      listener?.subscription.unsubscribe()
     }
   }, [user])
 

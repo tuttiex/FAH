@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '../lib/AuthContext'
 
 export default function Home() {
-  const { user, loading } = useAuth()
+  const { user } = useAuth()
   const [location, setLocation] = useState('')
   const [propertyType, setPropertyType] = useState('')
   const [budget, setBudget] = useState('')
@@ -17,14 +17,6 @@ export default function Home() {
     if (budget.trim()) params.set('budget', budget.trim())
     const query = params.toString()
     router.push(query ? `/rent?${query}` : '/rent')
-  }
-
-  if (loading) {
-    return (
-      <main className="flex-1 flex items-center justify-center">
-        <p className="text-gray-600">Loading...</p>
-      </main>
-    )
   }
 
   return (
