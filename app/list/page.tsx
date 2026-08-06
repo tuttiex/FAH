@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import Image from 'next/image'
 import imageCompression from 'browser-image-compression'
 import { supabase } from '../../lib/supabase'
+import { useAuth } from '../../lib/AuthContext'
 import type { User } from '@supabase/supabase-js'
 
 interface Property {
@@ -23,7 +24,7 @@ interface Property {
 }
 
 function ListPageContent() {
-  const [user, setUser] = useState<User | null>(null)
+  const { user, loading: authLoading } = useAuth()
   const [properties, setProperties] = useState<Property[]>([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
@@ -46,41 +47,43 @@ function ListPageContent() {
   const searchParams = useSearchParams()
 
   useEffect(() => {
+    if (authLoading) return
+
     const checkUserAndProfile = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      setUser(user)
-      
       if (user) {
-        // Check if profile is complete
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('first_name, surname, email')
-          .eq('user_id', user.id)
-          .single()
-        
-        const isProfileComplete = profile && 
-          profile.first_name && 
-          profile.surname && 
+        // Run profile-completeness check and properties fetch in parallel
+        const [profileResult, propertiesResult] = await Promise.all([
+          supabase
+            .from('profiles')
+            .select('first_name, surname, email')
+            .eq('user_id', user.id)
+            .single(),
+          fetchProperties(user),
+        ])
+
+        const profile = profileResult.data
+        const isProfileComplete = profile &&
+          profile.first_name &&
+          profile.surname &&
           profile.email
-        
+
         if (!isProfileComplete) {
           router.push('/profile')
           return
         }
       }
-      
-      // Check for edit query param
+
+      // Check for edit query param (sequential — needs profile completeness confirmed first)
       const editId = searchParams.get('edit')
       if (editId) {
         await loadPropertyForEdit(editId, user)
       }
-      
-      fetchProperties(user)
+
       setLoading(false)
     }
-    
+
     checkUserAndProfile()
-  }, [router, searchParams])
+  }, [authLoading, user, router, searchParams])
 
   const loadPropertyForEdit = async (propertyId: string, currentUser: User | null) => {
     const { data } = await supabase
@@ -177,29 +180,41 @@ function ListPageContent() {
     setUploading(true)
     const uploadedUrls: string[] = []
     
-    for (const file of selectedImages) {
-      const fileName = `${Date.now()}-${file.name}`
-      // Compress the image client-side before upload to reduce storage size
-      const compressedFile = await imageCompression(file, {
-        maxSizeMB: 1,
-        maxWidthOrHeight: 1600,
-        useWebWorker: true,
-      })
-      const { data, error } = await supabase.storage
-        .from('property-images')
-        .upload(fileName, compressedFile)
-      
-      if (data) {
-        const { data: publicUrl } = supabase.storage
-          .from('property-images')
-          .getPublicUrl(data.path)
-        if (publicUrl) {
-          uploadedUrls.push(publicUrl.publicUrl)
+    try {
+      for (const file of selectedImages) {
+        try {
+          const fileName = `${Date.now()}-${file.name}`
+          // Compress the image client-side before upload to reduce storage size
+          const compressedFile = await imageCompression(file, {
+            maxSizeMB: 1,
+            maxWidthOrHeight: 1600,
+            useWebWorker: true,
+          })
+          const { data, error } = await supabase.storage
+            .from('property-images')
+            .upload(fileName, compressedFile)
+
+          if (error) {
+            console.error('Upload failed for', file.name, error)
+            continue
+          }
+
+          if (data) {
+            const { data: publicUrl } = supabase.storage
+              .from('property-images')
+              .getPublicUrl(data.path)
+            if (publicUrl) {
+              uploadedUrls.push(publicUrl.publicUrl)
+            }
+          }
+        } catch (err) {
+          console.error('Compression failed for', file.name, err)
+          // continue to next file rather than aborting the whole batch
         }
       }
+    } finally {
+      setUploading(false)
     }
-    
-    setUploading(false)
     return uploadedUrls
   }
 

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '../../lib/supabase'
-import type { User } from '@supabase/supabase-js'
+import { useAuth } from '../../lib/AuthContext'
 
 interface Conversation {
   other_user_id: string
@@ -19,24 +19,19 @@ interface Conversation {
 }
 
 export default function MessagesPage() {
-  const [user, setUser] = useState<User | null>(null)
+  const { user, loading: authLoading } = useAuth()
   const [conversations, setConversations] = useState<Conversation[]>([])
   const [loading, setLoading] = useState(true)
   const router = useRouter()
 
   useEffect(() => {
-    const checkUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) {
-        router.push('/login')
-        return
-      }
-      setUser(user)
-      await fetchConversations(user.id)
+    if (authLoading) return
+    if (!user) {
+      router.push('/login')
+      return
     }
-
-    checkUser()
-  }, [router])
+    fetchConversations(user.id)
+  }, [authLoading, user, router])
 
   const fetchConversations = async (userId: string) => {
     setLoading(true)

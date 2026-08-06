@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { supabase } from '../../lib/supabase'
-import type { User } from '@supabase/supabase-js'
+import { useAuth } from '../../lib/AuthContext'
 
 interface Profile {
   id: string
@@ -33,7 +33,7 @@ interface Property {
 }
 
 export default function ProfilePage() {
-  const [user, setUser] = useState<User | null>(null)
+  const { user, loading: authLoading } = useAuth()
   const [profile, setProfile] = useState<Profile | null>(null)
   const [properties, setProperties] = useState<Property[]>([])
   const [loading, setLoading] = useState(true)
@@ -52,14 +52,13 @@ export default function ProfilePage() {
   const router = useRouter()
 
   useEffect(() => {
-    const checkUserAndProfile = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) {
-        router.push('/login')
-        return
-      }
-      setUser(user)
+    if (authLoading) return
+    if (!user) {
+      router.push('/login')
+      return
+    }
 
+    const fetchProfileAndProperties = async () => {
       // Fetch profile
       const { data: profileData } = await supabase
         .from('profiles')
@@ -92,8 +91,8 @@ export default function ProfilePage() {
       setLoading(false)
     }
 
-    checkUserAndProfile()
-  }, [router])
+    fetchProfileAndProperties()
+  }, [authLoading, user, router])
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
@@ -213,7 +212,7 @@ export default function ProfilePage() {
     }
   }
 
-  if (loading) {
+  if (loading || authLoading) {
     return (
       <main className="flex-1 flex items-center justify-center">
         <p className="text-on-surface-variant">Loading...</p>

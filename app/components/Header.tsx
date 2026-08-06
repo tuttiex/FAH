@@ -2,28 +2,24 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { supabase } from '../../lib/supabase'
-import type { User } from '@supabase/supabase-js'
+import { useAuth } from '../../lib/AuthContext'
 
 export default function Header() {
   const [dropdownOpen, setDropdownOpen] = useState(false)
-  const [user, setUser] = useState<User | null>(null)
+  const { user } = useAuth()
   const [unreadCount, setUnreadCount] = useState(0)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const mobileMenuRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    const checkUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      setUser(user)
-      if (user) {
-        fetchUnreadCount(user.id)
-      }
+    // Fetch unread count whenever the user changes
+    if (user) {
+      fetchUnreadCount(user.id)
+    } else {
+      setUnreadCount(0)
     }
 
-    checkUser()
-
     const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
-      setUser(session?.user || null)
       if (session?.user) {
         fetchUnreadCount(session.user.id)
       } else {
@@ -34,7 +30,7 @@ export default function Header() {
     return () => {
       listener?.subscription.unsubscribe()
     }
-  }, [])
+  }, [user])
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -64,7 +60,6 @@ export default function Header() {
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
-    setUser(null)
     setUnreadCount(0)
     setDropdownOpen(false)
   }

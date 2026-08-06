@@ -4,7 +4,7 @@ import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Image from 'next/image'
 import { supabase } from '../../lib/supabase'
-import type { User } from '@supabase/supabase-js'
+import { useAuth } from '../../lib/AuthContext'
 
 interface Property {
   id: string
@@ -21,9 +21,9 @@ interface Property {
 }
 
 function RentPageContent() {
+  const { user } = useAuth()
   const [properties, setProperties] = useState<Property[]>([])
   const [loading, setLoading] = useState(true)
-  const [user, setUser] = useState<User | null>(null)
   const router = useRouter()
   const searchParams = useSearchParams()
 
@@ -36,11 +36,6 @@ function RentPageContent() {
   const [searchTerm, setSearchTerm] = useState(locationParam)
 
   useEffect(() => {
-    const checkUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      setUser(user)
-    }
-    checkUser()
     fetchProperties()
     // TODO: wire up Property Type (typeParam) and Budget (budgetParam) filtering
     // to the existing search logic. For now, location drives the text search.

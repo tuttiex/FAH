@@ -1,13 +1,11 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { supabase } from '../lib/supabase'
-import type { User } from '@supabase/supabase-js'
+import { useAuth } from '../lib/AuthContext'
 
 export default function Home() {
-  const [user, setUser] = useState<User | null>(null)
-  const [loading, setLoading] = useState(true)
+  const { user, loading } = useAuth()
   const [location, setLocation] = useState('')
   const [propertyType, setPropertyType] = useState('')
   const [budget, setBudget] = useState('')
@@ -20,39 +18,6 @@ export default function Home() {
     const query = params.toString()
     router.push(query ? `/rent?${query}` : '/rent')
   }
-
-  useEffect(() => {
-    const checkUser = async () => {
-      const { data: { user }, error: userError } = await supabase.auth.getUser()
-      
-      if (userError) {
-        console.error('Error getting user:', userError)
-      }
-      
-      setUser(user)
-      setLoading(false)
-    }
-    
-    checkUser()
-    
-    const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_OUT') {
-        setUser(null)
-        setLoading(true)
-        router.push('/login')
-        return
-      }
-      
-      if (event === 'SIGNED_IN' && session?.user) {
-        setUser(session.user)
-        setLoading(true)
-      }
-    })
-    
-    return () => {
-      listener?.subscription.unsubscribe()
-    }
-  }, [router])
 
   if (loading) {
     return (

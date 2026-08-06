@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, use, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '../../../lib/supabase'
-import type { User } from '@supabase/supabase-js'
+import { useAuth } from '../../../lib/AuthContext'
 
 interface Message {
   id: string
@@ -18,7 +18,7 @@ function ConversationContent({ params }: { params: Promise<{ conversationId: str
   const { conversationId: otherUserId } = use(params)
   const searchParams = useSearchParams()
   const propertyId = searchParams.get('property')
-  const [user, setUser] = useState<User | null>(null)
+  const { user, loading: authLoading } = useAuth()
   const [otherUserName, setOtherUserName] = useState('')
   const [messages, setMessages] = useState<Message[]>([])
   const [loading, setLoading] = useState(true)
@@ -30,15 +30,12 @@ function ConversationContent({ params }: { params: Promise<{ conversationId: str
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
+    if (authLoading) return
+    if (!user) { router.push('/login'); return }
+
     let cancelled = false
 
     const init = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) { router.push('/login'); return }
-      if (cancelled) return
-
-      setUser(user)
-
       // Fetch other user's name via RPC (bypasses RLS)
       const { data: profileData } = await supabase
         .rpc('get_user_profile', { target_user_id: otherUserId })
@@ -110,7 +107,7 @@ function ConversationContent({ params }: { params: Promise<{ conversationId: str
     init()
 
     return () => { cancelled = true }
-  }, [otherUserId, router])
+  }, [authLoading, user, otherUserId, router])
 
   // Realtime listener
   useEffect(() => {
@@ -190,7 +187,7 @@ function ConversationContent({ params }: { params: Promise<{ conversationId: str
     setInputText('')
   }
 
-  if (loading) {
+  if (loading || authLoading) {
     return (
       <main className="flex-1 flex items-center justify-center">
         <p className="text-on-surface-variant">Loading conversation...</p>
