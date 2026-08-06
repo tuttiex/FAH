@@ -17,6 +17,7 @@ interface Property {
   image_urls?: string[]
   created_at: string
   user_id: string
+  is_active?: boolean
 }
 
 function ListPageContent() {
@@ -121,6 +122,19 @@ function ListPageContent() {
       .order('created_at', { ascending: false })
     if (data) {
       setProperties(data)
+    }
+  }
+
+  const handleRelistProperty = async (propertyId: string) => {
+    if (!user) return
+
+    const { error } = await supabase
+      .from('properties')
+      .update({ is_active: true })
+      .eq('id', propertyId)
+      .eq('user_id', user.id)
+    if (!error) {
+      setProperties(properties.map(p => p.id === propertyId ? { ...p, is_active: true } : p))
     }
   }
 
@@ -478,7 +492,14 @@ function ListPageContent() {
               <div className="grid gap-4">
                 {properties.map((prop) => (
                   <div key={prop.id} className="p-6 bg-surface-bright rounded-2xl shadow-sm border border-outline-variant/30 hover:shadow-md transition-shadow">
-                    <h3 className="font-semibold text-lg text-on-surface">{prop.property_type} - {prop.property_details}</h3>
+                    <div className="flex items-center justify-between gap-2">
+                      <h3 className="font-semibold text-lg text-on-surface">{prop.property_type} - {prop.property_details}</h3>
+                      {prop.is_active === false && (
+                        <span className="px-3 py-1 bg-red-50 text-red-600 rounded-xl font-semibold text-xs flex-shrink-0">
+                          Inactive
+                        </span>
+                      )}
+                    </div>
                     <p className="text-on-surface-variant text-sm">{prop.address}</p>
                     <p className="font-bold text-primary mt-1">₦{prop.price.toLocaleString()}</p>
                     {prop.image_urls && prop.image_urls.length > 0 && (
@@ -487,6 +508,14 @@ function ListPageContent() {
                           <img key={index} src={url} alt={`Property ${index + 1}`} className="w-20 h-20 object-cover rounded-lg" />
                         ))}
                       </div>
+                    )}
+                    {prop.is_active === false && (
+                      <button
+                        onClick={() => handleRelistProperty(prop.id)}
+                        className="mt-4 px-4 py-2 bg-primary-container text-white rounded-xl font-semibold text-sm hover:bg-primary/90 transition-colors"
+                      >
+                        Relist
+                      </button>
                     )}
                   </div>
                 ))}

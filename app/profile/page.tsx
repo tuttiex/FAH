@@ -28,6 +28,7 @@ interface Property {
   units_available: number
   image_urls?: string[]
   created_at: string
+  is_active?: boolean
 }
 
 export default function ProfilePage() {
@@ -184,17 +185,30 @@ export default function ProfilePage() {
     }
   }
 
-  const handleDeleteProperty = async (propertyId: string) => {
+  const handleDeactivateProperty = async (propertyId: string) => {
     if (!user) return
-    if (!confirm('Are you sure you want to delete this property?')) return
+    if (!confirm('Are you sure you want to deactivate this property? It will no longer appear on the public browse page.')) return
 
     const { error } = await supabase
       .from('properties')
-      .delete()
+      .update({ is_active: false })
       .eq('id', propertyId)
       .eq('user_id', user.id)
     if (!error) {
-      setProperties(properties.filter(p => p.id !== propertyId))
+      setProperties(properties.map(p => p.id === propertyId ? { ...p, is_active: false } : p))
+    }
+  }
+
+  const handleRelistProperty = async (propertyId: string) => {
+    if (!user) return
+
+    const { error } = await supabase
+      .from('properties')
+      .update({ is_active: true })
+      .eq('id', propertyId)
+      .eq('user_id', user.id)
+    if (!error) {
+      setProperties(properties.map(p => p.id === propertyId ? { ...p, is_active: true } : p))
     }
   }
 
@@ -390,18 +404,32 @@ export default function ProfilePage() {
                       </div>
                     </div>
                     <div className="flex md:flex-col gap-2">
+                      {prop.is_active === false && (
+                        <span className="px-3 py-1 bg-red-50 text-red-600 rounded-xl font-semibold text-xs self-start">
+                          Inactive
+                        </span>
+                      )}
                       <button
                         onClick={() => router.push(`/list?edit=${prop.id}`)}
                         className="px-4 py-2 bg-surface-container text-on-surface rounded-xl font-semibold text-sm hover:bg-outline-variant/30 transition-colors"
                       >
                         Edit
                       </button>
-                      <button
-                        onClick={() => handleDeleteProperty(prop.id)}
-                        className="px-4 py-2 bg-red-50 text-red-600 rounded-xl font-semibold text-sm hover:bg-red-100 transition-colors"
-                      >
-                        Delete
-                      </button>
+                      {prop.is_active === false ? (
+                        <button
+                          onClick={() => handleRelistProperty(prop.id)}
+                          className="px-4 py-2 bg-primary-container text-white rounded-xl font-semibold text-sm hover:bg-primary/90 transition-colors"
+                        >
+                          Relist
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => handleDeactivateProperty(prop.id)}
+                          className="px-4 py-2 bg-red-50 text-red-600 rounded-xl font-semibold text-sm hover:bg-red-100 transition-colors"
+                        >
+                          Deactivate
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>

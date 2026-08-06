@@ -47,7 +47,11 @@ function RentPageContent() {
 
   const fetchProperties = async () => {
     setLoading(true)
-    const { data, error } = await supabase.from('properties').select('*').order('created_at', { ascending: false })
+    const { data, error } = await supabase
+      .from('properties')
+      .select('*')
+      .eq('is_active', true)
+      .order('created_at', { ascending: false })
     if (data) {
       setProperties(data)
     }

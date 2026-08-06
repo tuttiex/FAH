@@ -24,7 +24,7 @@ function ConversationContent({ params }: { params: Promise<{ conversationId: str
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
   const [inputText, setInputText] = useState('')
-  const [propertyDetails, setPropertyDetails] = useState<{ property_type: string; property_details: string; price: number; address: string; image_urls?: string[] } | null>(null)
+  const [propertyDetails, setPropertyDetails] = useState<{ property_type: string; property_details: string; price: number; address: string; image_urls?: string[]; is_active?: boolean } | null>(null)
   const [resolvedPropertyId, setResolvedPropertyId] = useState<string | null>(null)
   const router = useRouter()
   const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -219,6 +219,11 @@ function ConversationContent({ params }: { params: Promise<{ conversationId: str
                 <p className="text-xs text-on-surface-variant truncate">{propertyDetails.address}</p>
                 <p className="text-xs font-bold text-primary">₦{propertyDetails.price.toLocaleString()}</p>
               </div>
+            </div>
+          )}
+          {propertyDetails && propertyDetails.is_active === false && (
+            <div className="px-4 py-2 bg-red-50 text-red-600 rounded-xl border border-red-200 text-sm font-semibold">
+              This listing is no longer available
             </div>
           )}
           <h2 className="font-semibold text-on-surface">{otherUserName || 'User'}</h2>
