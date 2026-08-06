@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import { supabase } from '../../lib/supabase'
 import type { User } from '@supabase/supabase-js'
 
@@ -229,10 +230,18 @@ export default function ProfilePage() {
         <div className="flex flex-col md:flex-row items-center gap-6 p-6 bg-surface-bright rounded-2xl shadow-sm border border-outline-variant/30">
           <div className="relative">
             <div className="w-24 h-24 rounded-full overflow-hidden bg-surface-container border-2 border-outline-variant/30">
-              {avatarPreview || profile?.avatar_url ? (
+              {avatarPreview ? (
                 <img 
-                  src={avatarPreview || profile?.avatar_url} 
+                  src={avatarPreview} 
                   alt="Avatar" 
+                  className="w-full h-full object-cover"
+                />
+              ) : profile?.avatar_url ? (
+                <Image 
+                  src={profile.avatar_url} 
+                  alt="Avatar" 
+                  width={96} 
+                  height={96}
                   className="w-full h-full object-cover"
                 />
               ) : (
@@ -388,9 +397,11 @@ export default function ProfilePage() {
                 <div key={prop.id} className="p-6 bg-surface-bright rounded-2xl shadow-sm border border-outline-variant/30 hover:shadow-md transition-shadow">
                   <div className="flex flex-col md:flex-row gap-4">
                     {prop.image_urls && prop.image_urls.length > 0 && (
-                      <img 
+                      <Image 
                         src={prop.image_urls[0]} 
                         alt={prop.property_type} 
+                        width={192} 
+                        height={128}
                         className="w-full md:w-48 h-32 object-cover rounded-lg"
                       />
                     )}

@@ -2,6 +2,8 @@
 
 import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import Image from 'next/image'
+import imageCompression from 'browser-image-compression'
 import { supabase } from '../../lib/supabase'
 import type { User } from '@supabase/supabase-js'
 
@@ -177,9 +179,15 @@ function ListPageContent() {
     
     for (const file of selectedImages) {
       const fileName = `${Date.now()}-${file.name}`
+      // Compress the image client-side before upload to reduce storage size
+      const compressedFile = await imageCompression(file, {
+        maxSizeMB: 1,
+        maxWidthOrHeight: 1600,
+        useWebWorker: true,
+      })
       const { data, error } = await supabase.storage
         .from('property-images')
-        .upload(fileName, file)
+        .upload(fileName, compressedFile)
       
       if (data) {
         const { data: publicUrl } = supabase.storage
@@ -417,7 +425,7 @@ function ListPageContent() {
                         <div className="flex flex-wrap gap-3">
                           {existingImages.map((url, index) => (
                             <div key={index} className="relative group">
-                              <img src={url} alt={`Existing ${index + 1}`} className="w-24 h-24 object-cover rounded-lg border border-outline-variant/30" />
+                              <Image src={url} alt={`Existing ${index + 1}`} width={96} height={96} className="w-24 h-24 object-cover rounded-lg border border-outline-variant/30" />
                               <button
                                 type="button"
                                 onClick={() => handleRemoveExistingImage(url)}
@@ -505,7 +513,7 @@ function ListPageContent() {
                     {prop.image_urls && prop.image_urls.length > 0 && (
                       <div className="mt-3 flex gap-2 overflow-x-auto">
                         {prop.image_urls.map((url, index) => (
-                          <img key={index} src={url} alt={`Property ${index + 1}`} className="w-20 h-20 object-cover rounded-lg" />
+                          <Image key={index} src={url} alt={`Property ${index + 1}`} width={80} height={80} className="w-20 h-20 object-cover rounded-lg" />
                         ))}
                       </div>
                     )}

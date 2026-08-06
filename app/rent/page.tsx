@@ -2,6 +2,7 @@
 
 import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import Image from 'next/image'
 import { supabase } from '../../lib/supabase'
 import type { User } from '@supabase/supabase-js'
 
@@ -113,7 +114,7 @@ function RentPageContent() {
                 {prop.image_urls && prop.image_urls.length > 0 && (
                   <div className="mt-3 flex gap-2 overflow-x-auto">
                     {prop.image_urls.map((url, index) => (
-                      <img key={index} src={url} alt={`Property ${index + 1}`} className="w-20 h-20 object-cover rounded-lg" />
+                      <Image key={index} src={url} alt={`Property ${index + 1}`} width={80} height={80} className="w-20 h-20 object-cover rounded-lg" />
                     ))}
                   </div>
                 )}
